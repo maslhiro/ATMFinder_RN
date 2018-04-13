@@ -14,12 +14,11 @@ import MapFireBase from './src/Components/MapFireBase'
 // Dinh vi va get dia chi (Quận + Thành Phố)
 import MapGPS from './src/Components/MapGPS'
 
-import MapRE from './src/Components/MapRE'
 export default class App extends Component {
   render() {
     return (
       <View style={styles.container}>
-       <MapRE/>
+    <MapGPS/>
       </View>
     );
   }

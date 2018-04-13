@@ -64,7 +64,7 @@ export default class MapFireBase extends Component {
     for (marker of this.state.markers) {
       markers.push(
         <Marker
-          key={marker.key}
+          key={marker.data.address}
           title={marker.key}
           coordinate={{
             latitude: parseFloat(marker.data.lat),
