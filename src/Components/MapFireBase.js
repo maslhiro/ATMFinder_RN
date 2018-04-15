@@ -45,7 +45,7 @@ export default class MapFireBase extends Component {
         });
         
   
-        this.setState({ marker: arrayMarker });
+        this.setState({ markers: arrayMarker });
       });
   }
 

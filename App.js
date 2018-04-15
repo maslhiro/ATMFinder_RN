@@ -5,20 +5,20 @@ import {
   Text,
   View
 } from 'react-native';
-
-import Map from './src/Components/Map'
+console.disableYellowBox=true;
+//import Map from './src/Components/Map'
 // In list marker
-import MapTest from './src/Components/MapTest'
+//import MapTest from './src/Components/MapTest'
 // In list marker tu FireBase
-import MapFireBase from './src/Components/MapFireBase'
+//import MapFireBase from './src/Components/MapFireBase'
 // Dinh vi va get dia chi (Quận + Thành Phố)
-import MapGPS from './src/Components/MapGPS'
-
+//import MapGPS from './src/Components/MapGPS'
+import MapRE from './src/Components/MapRE'
 export default class App extends Component {
   render() {
     return (
       <View style={styles.container}>
-    <MapGPS/>
+    <MapRE/>
       </View>
     );
   }
