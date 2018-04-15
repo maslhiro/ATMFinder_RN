@@ -5,4 +5,4 @@
   - react-native-geocoder        
   - react-native-map 0.20.1        
   - fire-base 
-<img src="https://imgur.com/31l6Uj6">
+![alt text](https://imgur.com/31l6Uj6)
