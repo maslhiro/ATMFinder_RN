@@ -21,7 +21,8 @@ class MapRE extends Component {
         longitude: 20
       },
       markers: arrayMarker,
-      shouldRenderMarker: false
+      shouldRenderMarker: false,
+      getGPS: true
     };
   }
 
@@ -38,34 +39,67 @@ class MapRE extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log("SHOULD UPDATE: NextProp" + nextState.shouldRenderMarker);
-  return nextState.shouldRenderMarker;
+    console.log("SHOULD UPDATE: Render Markers " + nextState.shouldRenderMarker);
+    console.log("SHOULD UPDATE: Get Gps " + nextState.getGPS);
+    if (nextState.getGPS==true || nextState.shouldRenderMarker===true){
+      return true;
+    }
+    return false;
   }
 
   componentWillUpdate(nextProps, nextState) {
-    console.log("WILL UPDATE: NEXT " + nextState.shouldRenderMarker);
-
-    database
-      .ref("VietComBank")
-      .child("Ho Chi Minh City")
-      .child("Thủ Đức")
-      .on("value", snap => {
-        snap.forEach(data => {
-          arrayMarker.push({
-            key: data.key,
-            data: data.val()
+    console.log("WILL UPDATE: Render Markers " + nextState.shouldRenderMarker);
+    console.log("WILL UPDATE: Get Gps " + nextState.getGPS);
+    // Get Array Markers from FireBase
+    if (nextState.shouldRenderMarker === true) {
+      database
+        .ref("VietComBank")
+        .child("Ho Chi Minh City")
+        .child("Thủ Đức")
+        .on("value", snap => {
+          snap.forEach(data => {
+            arrayMarker.push({
+              key: data.key,
+              data: data.val()
+            });
           });
-        });
 
-        nextState.markers = arrayMarker;
-      });
+          nextState.markers = arrayMarker;
+        });
+    }
+
+    // Get GPS 
+    if (nextState.getGPS === true) {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          nextState.region = {
+           latitude  : position.coords.latitude,
+           longitude: position.coords.longitude,
+          latitudeDelta :0.01,
+          longitudeDelta : 0.01
+
+          },
+          nextState.gps={
+            latitude : position.coords.latitude,
+            longitude: position.coords.longitude
+         
+        },
+        error => console.log(error),
+        { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 }
+          }
+                   
+          
+      );
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.shouldRenderMarker === true) {
       prevState.shouldRenderMarker = false;
     }
-    console.log("DID UPDATE: PREV " + prevState.shouldRenderMarker);
+    prevState.getGPS = false;
+    console.log("DID UPDATE: Render Markers " + prevState.shouldRenderMarker);
+    console.log("DID UPDATE: Get Gps " + prevState.getGPS);
   }
 
   componentWillUnmount() {
@@ -75,9 +109,13 @@ class MapRE extends Component {
   renderMarker() {
     console.log("RENDER: " + this.state.shouldRenderMarker);
     markers = [];
+    // if(this.state.getGPS===true){
+    //   <Marker coordinate={this.state.gps} />
+
+    // }
 
     if (this.state.shouldRenderMarker === true) {
-      console.log("RENDER Marker")
+      console.log("RENDER Marker");
       for (marker of this.state.markers) {
         markers.push(
           <Marker
@@ -100,15 +138,24 @@ class MapRE extends Component {
     this.setState({ shouldRenderMarker: true });
   }
 
+  getGPS() {
+    this.setState({ getGPS: true });
+  }
+ 
   render() {
     return (
       <View style={styles.container}>
         <MapView style={styles.map} region={this.state.region}>
           {this.renderMarker()}
+          
+
         </MapView>
         <View style={styles.buttonContainer}>
           <View style={styles.bubble}>
             <Text onPress={this.showAddress.bind(this)}>Find</Text>
+          </View>
+          <View style={styles.bubble}>
+            <Text onPress={this.getGPS.bind(this)}>GPS</Text>
           </View>
         </View>
       </View>
@@ -150,9 +197,5 @@ const styles = StyleSheet.create({
     alignItems: "center"
   }
 });
-
-// MapRE.propTypes = {
-
-// }
 
 export default MapRE;
