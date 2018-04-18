@@ -1,4 +1,4 @@
-# RN-DemoMap
+# ATM Finder React-Native
 
 ## Used:
   - React-Native `0.54.0-rc.4`
