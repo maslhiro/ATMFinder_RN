@@ -2,11 +2,14 @@ import React, { Component, PropTypes } from "react";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import MapView, { Marker, Callout } from "react-native-maps";
 import firebase from "./FirebaseConfig";
+import Geocoder from "react-native-geocoder";
 
 class MapRE extends Component {
   constructor(props) {
     super(props);
     database = firebase.database();
+    Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
+
     arrayMarker = [];
 
     this.state = {
@@ -19,6 +22,10 @@ class MapRE extends Component {
       gps: {
         latitude: 20,
         longitude: 20
+      },
+      address:{
+        city:"city",
+        district:"district"
       },
       markers: arrayMarker,
       shouldRenderMarker: false,
@@ -50,12 +57,15 @@ class MapRE extends Component {
   componentWillUpdate(nextProps, nextState) {
     console.log("WILL UPDATE: Render Markers " + nextState.shouldRenderMarker);
     console.log("WILL UPDATE: Get Gps " + nextState.getGPS);
+    console.log("WILL UPDATE: City " + nextState.address.city);
+    console.log("WILL UPDATE: Address " + nextState.address.district);
+
     // Get Array Markers from FireBase
     if (nextState.shouldRenderMarker === true) {
       database
-        .ref("VietComBank")
-        .child("Ho Chi Minh City")
-        .child("Thủ Đức")
+        .ref("VietTinBank")
+        .child(String(nextState.address.city))
+        .child(String(nextState.address.district))
         .on("value", snap => {
           snap.forEach(data => {
             arrayMarker.push({
@@ -83,10 +93,25 @@ class MapRE extends Component {
             latitude : position.coords.latitude,
             longitude: position.coords.longitude
          
-        },
-        error => console.log(error),
-        { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 }
+        },        
+        Geocoder.geocodePosition({lat:position.coords.latitude,lng:position.coords.longitude})
+        .then(res => {
+          //res[1].locality //Ho Chi Minh City
+          //  res[1].feature,// Trường tho
+          //  res[2].feature,
+          //  res[3].feature, //Phước long
+          //  res[4].feature ,//Thủ đức,
+          //  res[5].feature ,//Ho Chi Minh City
+            nextState.address={
+            city :res[5].feature,
+            district: formatVietnamese(res[4].feature)
           }
+         
+               
+        })},
+        (error) => {console.log(error)},
+        { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 }
+        
                    
           
       );
@@ -94,12 +119,14 @@ class MapRE extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.shouldRenderMarker === true) {
-      prevState.shouldRenderMarker = false;
-    }
+  prevState.shouldRenderMarker=false;
     prevState.getGPS = false;
     console.log("DID UPDATE: Render Markers " + prevState.shouldRenderMarker);
     console.log("DID UPDATE: Get Gps " + prevState.getGPS);
+    console.log("DID UPDATE: City " + prevState.address.city);
+    console.log("DID UPDATE: Address " + prevState.address.district);
+
+    
   }
 
   componentWillUnmount() {
@@ -109,12 +136,7 @@ class MapRE extends Component {
   renderMarker() {
     console.log("RENDER: " + this.state.shouldRenderMarker);
     markers = [];
-    // if(this.state.getGPS===true){
-    //   <Marker coordinate={this.state.gps} />
-
-    // }
-
-    if (this.state.shouldRenderMarker === true) {
+     if (this.state.shouldRenderMarker === true) {
       console.log("RENDER Marker");
       for (marker of this.state.markers) {
         markers.push(
@@ -135,7 +157,7 @@ class MapRE extends Component {
   }
 
   showAddress() {
-    this.setState({ shouldRenderMarker: true });
+    this.setState({ shouldRenderMarker: true, getGPS: false });
   }
 
   getGPS() {
@@ -197,5 +219,23 @@ const styles = StyleSheet.create({
     alignItems: "center"
   }
 });
+
+function formatVietnamese(str) {
+  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+  str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+  str = str.replace(/đ/g, "d");
+  str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+  str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+  str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+  str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+  str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+  str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+  str = str.replace(/Đ/g, "D");
+  return str;
+}
 
 export default MapRE;
