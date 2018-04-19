@@ -71,6 +71,7 @@ export default class MapGPS extends Component {
 
   render() {
     return (
+      <View style={{flex:1}}>
       <View style={styles.container}>
         <MapView style={styles.map} region={this.state.region}>
           <Marker coordinate={this.state.maker} />
@@ -78,10 +79,18 @@ export default class MapGPS extends Component {
         </MapView>
         <View style={styles.buttonContainer}>
           <View style={styles.bubble}>
-            <Text onPress={this.showAddress.bind(this)}>Find</Text>
+            <Text >Find</Text>
           </View>
         </View>
+        </View>
+        <View style={styles.buttonContainer01}>
+          <View style={styles.bubble}>
+            <Text >Search Box</Text>
+          </View>
+        </View>
+
       </View>
+      
     );
   }
 }
@@ -106,6 +115,14 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "flex-end",
+
+    alignItems: "center",
+    marginVertical: 30,
+    backgroundColor: "transparent"
+  },
+  buttonContainer01: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
 
     alignItems: "center",
     marginVertical: 30,

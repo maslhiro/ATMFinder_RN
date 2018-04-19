@@ -1,15 +1,27 @@
 import React, { Component, PropTypes } from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableHightLight,
+  TouchableOpacity,
+  DrawerLayoutAndroid
+} from "react-native";
 import MapView, { Marker, Callout } from "react-native-maps";
+import { Header, Button } from "react-native-elements";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import firebase from "./FirebaseConfig";
 import Geocoder from "react-native-geocoder";
+
+const myIcon = <Icon name="crosshairs-gps" size={30} color="#333" />;
 
 class MapRE extends Component {
   constructor(props) {
     super(props);
     database = firebase.database();
     Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
-
+    this.openDrawer = this.openDrawer.bind(this);
     arrayMarker = [];
 
     this.state = {
@@ -23,9 +35,9 @@ class MapRE extends Component {
         latitude: 20,
         longitude: 20
       },
-      address:{
-        city:"city",
-        district:"district"
+      address: {
+        city: "city",
+        district: "district"
       },
       markers: arrayMarker,
       shouldRenderMarker: false,
@@ -46,9 +58,11 @@ class MapRE extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log("SHOULD UPDATE: Render Markers " + nextState.shouldRenderMarker);
+    console.log(
+      "SHOULD UPDATE: Render Markers " + nextState.shouldRenderMarker
+    );
     console.log("SHOULD UPDATE: Get Gps " + nextState.getGPS);
-    if (nextState.getGPS==true || nextState.shouldRenderMarker===true){
+    if (nextState.getGPS == true || nextState.shouldRenderMarker === true) {
       return true;
     }
     return false;
@@ -78,55 +92,51 @@ class MapRE extends Component {
         });
     }
 
-    // Get GPS 
+    // Get GPS
     if (nextState.getGPS === true) {
       navigator.geolocation.getCurrentPosition(
         position => {
-          nextState.region = {
-           latitude  : position.coords.latitude,
-           longitude: position.coords.longitude,
-          latitudeDelta :0.01,
-          longitudeDelta : 0.01
-
-          },
-          nextState.gps={
-            latitude : position.coords.latitude,
-            longitude: position.coords.longitude
-         
-        },        
-        Geocoder.geocodePosition({lat:position.coords.latitude,lng:position.coords.longitude})
-        .then(res => {
-          //res[1].locality //Ho Chi Minh City
-          //  res[1].feature,// Trường tho
-          //  res[2].feature,
-          //  res[3].feature, //Phước long
-          //  res[4].feature ,//Thủ đức,
-          //  res[5].feature ,//Ho Chi Minh City
-            nextState.address={
-            city :res[5].feature,
-            district: formatVietnamese(res[4].feature)
-          }
-         
-               
-        })},
-        (error) => {console.log(error)},
+          (nextState.region = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01
+          }),
+            (nextState.gps = {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            }),
+            Geocoder.geocodePosition({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            }).then(res => {
+              //res[1].locality //Ho Chi Minh City
+              //  res[1].feature,// Trường tho
+              //  res[2].feature,
+              //  res[3].feature, //Phước long
+              //  res[4].feature ,//Thủ đức,
+              //  res[5].feature ,//Ho Chi Minh City
+              nextState.address = {
+                city: res[5].feature,
+                district: formatVietnamese(res[4].feature)
+              };
+            });
+        },
+        error => {
+          console.log(error);
+        },
         { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 }
-        
-                   
-          
       );
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
-  prevState.shouldRenderMarker=false;
+    prevState.shouldRenderMarker = false;
     prevState.getGPS = false;
     console.log("DID UPDATE: Render Markers " + prevState.shouldRenderMarker);
     console.log("DID UPDATE: Get Gps " + prevState.getGPS);
     console.log("DID UPDATE: City " + prevState.address.city);
     console.log("DID UPDATE: Address " + prevState.address.district);
-
-    
   }
 
   componentWillUnmount() {
@@ -136,7 +146,7 @@ class MapRE extends Component {
   renderMarker() {
     console.log("RENDER: " + this.state.shouldRenderMarker);
     markers = [];
-     if (this.state.shouldRenderMarker === true) {
+    if (this.state.shouldRenderMarker === true) {
       console.log("RENDER Marker");
       for (marker of this.state.markers) {
         markers.push(
@@ -163,24 +173,71 @@ class MapRE extends Component {
   getGPS() {
     this.setState({ getGPS: true });
   }
- 
-  render() {
-    return (
-      <View style={styles.container}>
-        <MapView style={styles.map} region={this.state.region}>
-          {this.renderMarker()}
-          
 
-        </MapView>
-        <View style={styles.buttonContainer}>
-          <View style={styles.bubble}>
-            <Text onPress={this.showAddress.bind(this)}>Find</Text>
+  openDrawer() {
+    this.refs["DRAWER_REF"].openDrawer();
+  }
+
+  render() {
+    var navigationView = (
+      <View style={{ flex: 1, backgroundColor: "#fff" }}>
+        <Text style={{ margin: 10, fontSize: 15, textAlign: "left" }}>
+          I'm in the Drawer!
+        </Text>
+      </View>
+    );
+    return (
+      <DrawerLayoutAndroid
+        drawerWidth={240}
+        ref={"DRAWER_REF"}
+        drawerPosition={DrawerLayoutAndroid.positions.Left}
+        renderNavigationView={() => navigationView}
+      >
+        <View style={styles.container}>
+          <View style={styles.container01}>
+            <MapView
+              provider="google"
+              style={styles.map}
+              showsUserLocation={true}
+              region={this.state.region}
+            >
+              {this.renderMarker()}
+            </MapView>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.mapButton}
+              onPress={this.getGPS.bind(this)}
+            >
+              {myIcon}
+            </TouchableOpacity>
           </View>
-          <View style={styles.bubble}>
-            <Text onPress={this.getGPS.bind(this)}>GPS</Text>
+          <View style={styles.buttonContainer}>
+            <Button
+              // loadingProps={{ size: "large", color: "rgba(111, 202, 186, 1)" }}
+              icon={{ name: "search", type: "font-awesome" }}
+              title="FIND"
+              buttonStyle={{
+                backgroundColor: "#333",
+                borderColor: "transparent",
+                borderWidth: 0,
+                borderRadius: 10
+              }}
+              onPress={this.showAddress.bind(this)}
+            />
           </View>
         </View>
-      </View>
+
+        <Header
+          placement="left"
+          leftComponent={{
+            icon: "menu",
+            color: "#fff",
+            onPress: () => this.openDrawer()
+          }}
+          centerComponent={{ text: "호앙 난", style: { color: "#fff" } }}
+          backgroundColor={"#333333"}
+        />
+      </DrawerLayoutAndroid>
     );
   }
 }
@@ -194,6 +251,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "flex-end",
     alignItems: "center"
+  },
+  container01: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "flex-end",
+    alignItems: "flex-end"
   },
   map: {
     position: "absolute",
@@ -217,6 +283,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 20,
     alignItems: "center"
+  },
+  mapButton: {
+    width: 75,
+    height: 75,
+    borderRadius: 85 / 2,
+    backgroundColor: "rgba(252, 253, 253, 0.9)",
+    justifyContent: "center",
+    marginBottom: 20,
+    marginRight: 20,
+    alignItems: "center",
+    shadowColor: "black",
+    shadowRadius: 8,
+    shadowOpacity: 0.12,
+    opacity: 0.6,
+    zIndex: 10
   }
 });
 
