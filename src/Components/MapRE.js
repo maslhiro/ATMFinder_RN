@@ -14,8 +14,10 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import firebase from "./FirebaseConfig";
 import Geocoder from "react-native-geocoder";
 import geolib from "geolib";
-const myIcon = <Icon name="crosshairs-gps" size={30} color="#333" />;
+import MapViewDirections from 'react-native-maps-directions';
 
+const myIcon = <Icon name="crosshairs-gps" size={30} color="#333" />;
+const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
 class MapRE extends Component {
   constructor(props) {
     super(props);
@@ -41,7 +43,7 @@ class MapRE extends Component {
       },
       markers: arrayMarker,
       shouldRenderListMarker: false,
-      getATM:false,
+      getATM: false,
       getGPS: true
     };
   }
@@ -58,19 +60,25 @@ class MapRE extends Component {
     console.log("WILL RECEIVE : NextProp");
   }
 
-shouldComponentUpdate(nextProps, nextState) {
-  console.log(
-    "SHOULD UPDATE: Render List Markers " + nextState.shouldRenderListMarker
-  );
-  console.log("SHOULD UPDATE: Get Gps " + nextState.getGPS);
-  if (nextState.getGPS === true || nextState.shouldRenderListMarker === true || nextState.getATM === true) {
-    return true;
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log(
+      "SHOULD UPDATE: Render List Markers " + nextState.shouldRenderListMarker
+    );
+    console.log("SHOULD UPDATE: Get Gps " + nextState.getGPS);
+    if (
+      nextState.getGPS === true ||
+      nextState.shouldRenderListMarker === true ||
+      nextState.getATM === true
+    ) {
+      return true;
+    }
+    return false;
   }
-  return false;
-}
 
   componentWillUpdate(nextProps, nextState) {
-    console.log("WILL UPDATE: Render List Markers " + nextState.shouldRenderListMarker);
+    console.log(
+      "WILL UPDATE: Render List Markers " + nextState.shouldRenderListMarker
+    );
     console.log("WILL UPDATE: Get Gps " + nextState.getGPS);
     console.log("WILL UPDATE: Get ATM " + nextState.getATM);
     console.log("WILL UPDATE: City " + nextState.address.city);
@@ -132,16 +140,17 @@ shouldComponentUpdate(nextProps, nextState) {
     }
 
     // Get Marker Close to Current Pos
-    if(nextState.getATM===true){
-
+    if (nextState.getATM === true) {
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
     prevState.shouldRenderListMarker = false;
     prevState.getGPS = false;
-    prevState.getATM = false,
-    console.log("DID UPDATE: Render List Markers " + prevState.shouldRenderListMarker);
+    (prevState.getATM = false),
+      console.log(
+        "DID UPDATE: Render List Markers " + prevState.shouldRenderListMarker
+      );
     console.log("DID UPDATE: Get Gps " + prevState.getGPS);
     console.log("DID UPDATE: Get ATM " + prevState.getATM);
     console.log("DID UPDATE: City " + prevState.address.city);
@@ -176,27 +185,34 @@ shouldComponentUpdate(nextProps, nextState) {
   }
 
   renderMarker() {
-
-      if (this.state.getATM === true) {
-        var marker = this.getMarkerCloseToCurrentPos(this.state)
-        return ( 
-        < Marker key = {
-          marker.address
-          }
-          title = {
-            marker.key
-          }
-          coordinate = {
-            {
+    if (this.state.getATM === true) {
+      var marker = this.getMarkerCloseToCurrentPos(this.state);
+      return (
+        <View>
+          <Marker
+            key={marker.address}
+            title={marker.key}
+            coordinate={{
               latitude: parseFloat(marker.latitude),
               longitude: parseFloat(marker.longitude)
-            }
-          }
-          />);
-        }
-        console.log("No Marker")
-      }
-
+            }}
+          />
+          <MapViewDirections
+            origin={{
+              latitude: parseFloat(marker.latitude),
+              longitude: parseFloat(marker.longitude)
+            }}
+            destination={{
+              latitude: parseFloat(this.state.gps.latitude),
+              longitude: parseFloat(this.state.gps.longitude)
+            }}
+            apikey={GOOGLE_MAPS_APIKEY}
+          />
+        </View>
+      );
+    }
+    console.log("No Marker");
+  }
 
   showAddress() {
     this.setState({
@@ -214,13 +230,12 @@ shouldComponentUpdate(nextProps, nextState) {
     });
   }
 
-  getATM(){
+  getATM() {
     this.setState({
       shouldRenderListMarker: false,
       getGPS: false,
       getATM: true
     });
-
   }
 
   openDrawer() {
@@ -248,15 +263,18 @@ shouldComponentUpdate(nextProps, nextState) {
       };
       break;
     }
-    console.log("DATA")
-    console.log(data)
-    var minDistance = geolib.getDistance({
-      latitude: data.latitude,
-      longitude: data.longitude
-    }, {
-      latitude: dataState.gps.latitude,
-      longitude: dataState.gps.longitude
-    });
+    console.log("DATA");
+    console.log(data);
+    var minDistance = geolib.getDistance(
+      {
+        latitude: data.latitude,
+        longitude: data.longitude
+      },
+      {
+        latitude: dataState.gps.latitude,
+        longitude: dataState.gps.longitude
+      }
+    );
 
     var temp = {
       key: "",
@@ -276,39 +294,42 @@ shouldComponentUpdate(nextProps, nextState) {
         longitude: marker.data.long
       };
       // Check minDistance
-      if(minDistance>geolib.getDistance({
-        latitude: temp.latitude,
-        longitude: temp.longitude
-      }, {
-        latitude: dataState.gps.latitude,
-        longitude: dataState.gps.longitude
-      }))
-      {
+      if (
+        minDistance >
+        geolib.getDistance(
+          {
+            latitude: temp.latitude,
+            longitude: temp.longitude
+          },
+          {
+            latitude: dataState.gps.latitude,
+            longitude: dataState.gps.longitude
+          }
+        )
+      ) {
         data = {
           key: temp.key,
           address: temp.address,
           amount: temp.amount,
           workingHour: temp.workingHour,
-          latitude:temp.latitude,
-          longitude: temp.longitude
-        };
-        minDistance=geolib.getDistance({
           latitude: temp.latitude,
           longitude: temp.longitude
-        }, {
-          latitude: dataState.gps.latitude,
-          longitude: dataState.gps.longitude
-        });
-       
+        };
+        minDistance = geolib.getDistance(
+          {
+            latitude: temp.latitude,
+            longitude: temp.longitude
+          },
+          {
+            latitude: dataState.gps.latitude,
+            longitude: dataState.gps.longitude
+          }
+        );
       }
-
-
-
     }
-    console.log("DATA MIN")
-    console.log(data)
+    console.log("DATA MIN");
+    console.log(data);
     return data;
-
   }
 
   render() {
@@ -358,7 +379,7 @@ shouldComponentUpdate(nextProps, nextState) {
               }}
               onPress={this.showAddress.bind(this)}
             />
-             <Button
+            <Button
               // loadingProps={{ size: "large", color: "rgba(111, 202, 186, 1)" }}
               icon={{ name: "search", type: "font-awesome" }}
               title="SHOW"
