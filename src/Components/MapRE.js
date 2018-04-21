@@ -13,7 +13,7 @@ import { Header, Button } from "react-native-elements";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import firebase from "./FirebaseConfig";
 import Geocoder from "react-native-geocoder";
-
+import geolib from "geolib";
 const myIcon = <Icon name="crosshairs-gps" size={30} color="#333" />;
 
 class MapRE extends Component {
@@ -40,7 +40,8 @@ class MapRE extends Component {
         district: "district"
       },
       markers: arrayMarker,
-      shouldRenderMarker: false,
+      shouldRenderListMarker: false,
+      getATM:false,
       getGPS: true
     };
   }
@@ -57,25 +58,26 @@ class MapRE extends Component {
     console.log("WILL RECEIVE : NextProp");
   }
 
-  shouldComponentUpdate(nextProps, nextState) {
-    console.log(
-      "SHOULD UPDATE: Render Markers " + nextState.shouldRenderMarker
-    );
-    console.log("SHOULD UPDATE: Get Gps " + nextState.getGPS);
-    if (nextState.getGPS == true || nextState.shouldRenderMarker === true) {
-      return true;
-    }
-    return false;
+shouldComponentUpdate(nextProps, nextState) {
+  console.log(
+    "SHOULD UPDATE: Render List Markers " + nextState.shouldRenderListMarker
+  );
+  console.log("SHOULD UPDATE: Get Gps " + nextState.getGPS);
+  if (nextState.getGPS === true || nextState.shouldRenderListMarker === true || nextState.getATM === true) {
+    return true;
   }
+  return false;
+}
 
   componentWillUpdate(nextProps, nextState) {
-    console.log("WILL UPDATE: Render Markers " + nextState.shouldRenderMarker);
+    console.log("WILL UPDATE: Render List Markers " + nextState.shouldRenderListMarker);
     console.log("WILL UPDATE: Get Gps " + nextState.getGPS);
+    console.log("WILL UPDATE: Get ATM " + nextState.getATM);
     console.log("WILL UPDATE: City " + nextState.address.city);
-    console.log("WILL UPDATE: Address " + nextState.address.district);
+    console.log("WILL UPDATE: District " + nextState.address.district);
 
     // Get Array Markers from FireBase
-    if (nextState.shouldRenderMarker === true) {
+    if (nextState.shouldRenderListMarker === true) {
       database
         .ref("VietTinBank")
         .child(String(nextState.address.city))
@@ -128,13 +130,20 @@ class MapRE extends Component {
         { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 }
       );
     }
+
+    // Get Marker Close to Current Pos
+    if(nextState.getATM===true){
+
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    prevState.shouldRenderMarker = false;
+    prevState.shouldRenderListMarker = false;
     prevState.getGPS = false;
-    console.log("DID UPDATE: Render Markers " + prevState.shouldRenderMarker);
+    prevState.getATM = false,
+    console.log("DID UPDATE: Render List Markers " + prevState.shouldRenderListMarker);
     console.log("DID UPDATE: Get Gps " + prevState.getGPS);
+    console.log("DID UPDATE: Get ATM " + prevState.getATM);
     console.log("DID UPDATE: City " + prevState.address.city);
     console.log("DID UPDATE: Address " + prevState.address.district);
   }
@@ -143,10 +152,10 @@ class MapRE extends Component {
     console.log("Will Unmount");
   }
 
-  renderMarker() {
-    console.log("RENDER: " + this.state.shouldRenderMarker);
+  renderListMarker() {
+    console.log("RENDER: " + this.state.shouldRenderListMarker);
     markers = [];
-    if (this.state.shouldRenderMarker === true) {
+    if (this.state.shouldRenderListMarker === true) {
       console.log("RENDER Marker");
       for (marker of this.state.markers) {
         markers.push(
@@ -166,16 +175,140 @@ class MapRE extends Component {
     return markers;
   }
 
+  renderMarker() {
+
+      if (this.state.getATM === true) {
+        var marker = this.getMarkerCloseToCurrentPos(this.state)
+        return ( 
+        < Marker key = {
+          marker.address
+          }
+          title = {
+            marker.key
+          }
+          coordinate = {
+            {
+              latitude: parseFloat(marker.latitude),
+              longitude: parseFloat(marker.longitude)
+            }
+          }
+          />);
+        }
+        console.log("No Marker")
+      }
+
+
   showAddress() {
-    this.setState({ shouldRenderMarker: true, getGPS: false });
+    this.setState({
+      shouldRenderListMarker: true,
+      getGPS: false,
+      getATM: false
+    });
   }
 
   getGPS() {
-    this.setState({ getGPS: true });
+    this.setState({
+      shouldRenderListMarker: false,
+      getGPS: true,
+      getATM: false
+    });
+  }
+
+  getATM(){
+    this.setState({
+      shouldRenderListMarker: false,
+      getGPS: false,
+      getATM: true
+    });
+
   }
 
   openDrawer() {
     this.refs["DRAWER_REF"].openDrawer();
+  }
+
+  getMarkerCloseToCurrentPos(dataState) {
+    var data = {
+      key: "",
+      address: "",
+      amount: "",
+      workingHour: "",
+      latitude: 20,
+      longitude: 20
+    };
+    // Get fist Marker in state
+    for (marker of dataState.markers) {
+      data = {
+        key: marker.key,
+        address: marker.data.Address,
+        amount: marker.data.Amount,
+        workingHour: marker.data.WorkingHour,
+        latitude: marker.data.lat,
+        longitude: marker.data.long
+      };
+      break;
+    }
+    console.log("DATA")
+    console.log(data)
+    var minDistance = geolib.getDistance({
+      latitude: data.latitude,
+      longitude: data.longitude
+    }, {
+      latitude: dataState.gps.latitude,
+      longitude: dataState.gps.longitude
+    });
+
+    var temp = {
+      key: "",
+      address: "",
+      amount: "",
+      workingHour: "",
+      latitude: 20,
+      longitude: 20
+    };
+    for (marker of dataState.markers) {
+      temp = {
+        key: marker.key,
+        address: marker.data.Address,
+        amount: marker.data.Amount,
+        workingHour: marker.data.WorkingHour,
+        latitude: marker.data.lat,
+        longitude: marker.data.long
+      };
+      // Check minDistance
+      if(minDistance>geolib.getDistance({
+        latitude: temp.latitude,
+        longitude: temp.longitude
+      }, {
+        latitude: dataState.gps.latitude,
+        longitude: dataState.gps.longitude
+      }))
+      {
+        data = {
+          key: temp.key,
+          address: temp.address,
+          amount: temp.amount,
+          workingHour: temp.workingHour,
+          latitude:temp.latitude,
+          longitude: temp.longitude
+        };
+        minDistance=geolib.getDistance({
+          latitude: temp.latitude,
+          longitude: temp.longitude
+        }, {
+          latitude: dataState.gps.latitude,
+          longitude: dataState.gps.longitude
+        });
+       
+      }
+
+
+
+    }
+    console.log("DATA MIN")
+    console.log(data)
+    return data;
+
   }
 
   render() {
@@ -201,6 +334,7 @@ class MapRE extends Component {
               showsUserLocation={true}
               region={this.state.region}
             >
+              {this.renderListMarker()}
               {this.renderMarker()}
             </MapView>
             <TouchableOpacity
@@ -223,6 +357,18 @@ class MapRE extends Component {
                 borderRadius: 10
               }}
               onPress={this.showAddress.bind(this)}
+            />
+             <Button
+              // loadingProps={{ size: "large", color: "rgba(111, 202, 186, 1)" }}
+              icon={{ name: "search", type: "font-awesome" }}
+              title="SHOW"
+              buttonStyle={{
+                backgroundColor: "#333",
+                borderColor: "transparent",
+                borderWidth: 0,
+                borderRadius: 10
+              }}
+              onPress={this.getATM.bind(this)}
             />
           </View>
         </View>
