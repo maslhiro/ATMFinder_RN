@@ -3,6 +3,7 @@
 ## Used:
   - React-Native `0.54.0-rc.4`
   - Build.gradle `2.2.3` 
+  - Geolib : https://github.com/manuelbieh/Geolib
   - React Native Elements : https://github.com/react-native-training/react-native-elements
   - react-native-geocoder : https://github.com/devfd/react-native-geocoder  
   - react-native-vector-icons : https://github.com/oblador/react-native-vector-icons
