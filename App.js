@@ -17,6 +17,7 @@ import MapRE from './src/Components/MapRE'
 export default class App extends Component {
   render() {
     return (
+      
       <View style={styles.container}>
     <MapRE/>
       </View>

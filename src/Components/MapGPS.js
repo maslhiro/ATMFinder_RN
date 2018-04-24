@@ -18,14 +18,26 @@ export default class MapGPS extends Component {
       maker: {
         latitude: 20,
         longitude: 20
-      }
+      },
+      getGPS: false
     };
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log("Should update");
+    return true;
+  }
+
+  componentWillUpdate(nextProps, nextState) {
     
   }
 
-  componentWillMount() {
-    navigator.geolocation.getCurrentPosition(
-      position => {
+  componentDidUpdate(prevProps, prevState) {
+    
+  }
+  componentDidMount() {
+    this.watchId = navigator.geolocation.watchPosition(
+      (position) => {
         this.setState({
           region: {
             latitude: position.coords.latitude,
@@ -40,8 +52,12 @@ export default class MapGPS extends Component {
         });
       },
       error => console.log(error),
-      { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 }
+      { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000,distanceFilter :1 }
     );
+  }
+
+  componentWillUnmount() {
+    navigator.geolocation .clearWatch(this.watchId);
   }
 
   showAddress() {
@@ -52,45 +68,44 @@ export default class MapGPS extends Component {
 
     Geocoder.geocodePosition(GPS)
       .then(res => {
-      
-         //res[1].locality //Ho Chi Minh City
+        //res[1].locality //Ho Chi Minh City
         //  res[1].feature,// Trường tho
         //  res[2].feature,
         //  res[3].feature, //Phước long
         //  res[4].feature ,//Thủ đức,
         //  res[5].feature ,//Ho Chi Minh City
-        console.log("5 : "+res[5].feature);
-        console.log("4 : "+res[4].feature);
-        console.log("3 : "+res[3].feature);
-        console.log("2 : "+res[2].feature);
-        console.log("1 : "+res[1].feature);
+        console.log("5 : " + res[5].feature);
+        console.log("4 : " + res[4].feature);
+        console.log("3 : " + res[3].feature);
+        console.log("2 : " + res[2].feature);
+        console.log("1 : " + res[1].feature);
         alert(res[4].feature);
       })
       .catch(err => console.log(err));
   }
 
+  onRegionChangeComplete = region => {
+    console.log(" region", region);
+  };
+
   render() {
     return (
-      <View style={{flex:1}}>
-      <View style={styles.container}>
-        <MapView style={styles.map} region={this.state.region}>
-          <Marker coordinate={this.state.maker} />
-        
-        </MapView>
-        <View style={styles.buttonContainer}>
-          <View style={styles.bubble}>
-            <Text >Find</Text>
+      <View style={{ flex: 1 }}>
+        <View style={styles.container}>
+          <MapView
+            style={styles.map}
+            region={this.state.region}
+            onRegionChangeComplete={this.onRegionChangeComplete}
+          >
+            <Marker coordinate={this.state.maker} />
+          </MapView>
+          <View style={styles.buttonContainer}>
+            <View style={styles.bubble}>
+              <Text onPress={()=>this.setState({getGPS:true})}>Find</Text>
+            </View>
           </View>
         </View>
-        </View>
-        <View style={styles.buttonContainer01}>
-          <View style={styles.bubble}>
-            <Text >Search Box</Text>
-          </View>
-        </View>
-
       </View>
-      
     );
   }
 }

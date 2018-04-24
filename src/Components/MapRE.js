@@ -14,7 +14,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import firebase from "./FirebaseConfig";
 import Geocoder from "react-native-geocoder";
 import geolib from "geolib";
-import MapViewDirections from 'react-native-maps-directions';
+import MapViewDirections from "react-native-maps-directions";
 
 const myIcon = <Icon name="crosshairs-gps" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
@@ -44,7 +44,8 @@ class MapRE extends Component {
       markers: arrayMarker,
       shouldRenderListMarker: false,
       getATM: false,
-      getGPS: true
+      getGPS: true,
+      updateLatLong: false
     };
   }
 
@@ -54,6 +55,44 @@ class MapRE extends Component {
 
   componentDidMount() {
     console.log("Did mount");
+    this.watchId = navigator.geolocation.watchPosition(
+      position => {
+        Geocoder.geocodePosition({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        }).then(res => {
+          //  res[1].locality //Ho Chi Minh City
+          //  res[1].feature,// Trường tho
+          //  res[2].feature,
+          //  res[3].feature, //Phước long
+          //  res[4].feature ,//Thủ đức,
+          //  res[5].feature ,//Ho Chi Minh City
+          this.setState({
+            address: {
+              city: res[5].feature,
+              district: formatVietnamese(res[4].feature)
+            },
+            region: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01
+            },
+            gps: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            }
+          });
+        })
+      },
+      error => console.log(error),
+      {
+        enableHighAcuracy: true,
+        timeout: 20000,
+        maximumAge: 1000,
+        distanceFilter: 1
+      }
+    );
   }
 
   componentWillReceiveProps(nextProps) {
@@ -86,71 +125,59 @@ class MapRE extends Component {
 
     // Get Array Markers from FireBase
     if (nextState.shouldRenderListMarker === true) {
-      database
-        .ref("VietTinBank")
-        .child(String(nextState.address.city))
-        .child(String(nextState.address.district))
-        .on("value", snap => {
-          snap.forEach(data => {
-            arrayMarker.push({
-              key: data.key,
-              data: data.val()
-            });
-          });
-
-          nextState.markers = arrayMarker;
-        });
+      //this.getDataWithKey(nextState)
     }
 
     // Get GPS
-    if (nextState.getGPS === true) {
-      navigator.geolocation.getCurrentPosition(
-        position => {
-          (nextState.region = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01
-          }),
-            (nextState.gps = {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
-            }),
-            Geocoder.geocodePosition({
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
-            }).then(res => {
-              //res[1].locality //Ho Chi Minh City
-              //  res[1].feature,// Trường tho
-              //  res[2].feature,
-              //  res[3].feature, //Phước long
-              //  res[4].feature ,//Thủ đức,
-              //  res[5].feature ,//Ho Chi Minh City
-              nextState.address = {
-                city: res[5].feature,
-                district: formatVietnamese(res[4].feature)
-              };
-            });
-        },
-        error => {
-          console.log(error);
-        },
-        { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 }
-      );
-    }
+    // if (nextState.getGPS === true) {
+    //   navigator.geolocation.getCurrentPosition(
+    //     position => {
+    //       (nextState.region = {
+    //         latitude: position.coords.latitude,
+    //         longitude: position.coords.longitude,
+    //         latitudeDelta: 0.01,
+    //         longitudeDelta: 0.01
+    //       }),
+    //         (nextState.gps = {
+    //           latitude: position.coords.latitude,
+    //           longitude: position.coords.longitude
+    //         }),
+    //         Geocoder.geocodePosition({
+    //           lat: position.coords.latitude,
+    //           lng: position.coords.longitude
+    //         }).then(res => {
+    //           //  res[1].locality //Ho Chi Minh City
+    //           //  res[1].feature,// Trường tho
+    //           //  res[2].feature,
+    //           //  res[3].feature, //Phước long
+    //           //  res[4].feature ,//Thủ đức,
+    //           //  res[5].feature ,//Ho Chi Minh City
+    //           nextState.address = {
+    //             city: res[5].feature,
+    //             district: formatVietnamese(res[4].feature)
+    //           };
+    //         });
+    //     },
+    //     error => {
+    //       console.log(error);
+    //     },
+    //     { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 }
+    //   );
+    // }
 
     // Get Marker Close to Current Pos
     if (nextState.getATM === true) {
+      this.getDataWithKey(nextState);
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
     prevState.shouldRenderListMarker = false;
     prevState.getGPS = false;
-    (prevState.getATM = false),
-      console.log(
-        "DID UPDATE: Render List Markers " + prevState.shouldRenderListMarker
-      );
+    prevState.getATM = false;
+    console.log(
+      "DID UPDATE: Render List Markers " + prevState.shouldRenderListMarker
+    );
     console.log("DID UPDATE: Get Gps " + prevState.getGPS);
     console.log("DID UPDATE: Get ATM " + prevState.getATM);
     console.log("DID UPDATE: City " + prevState.address.city);
@@ -159,8 +186,10 @@ class MapRE extends Component {
 
   componentWillUnmount() {
     console.log("Will Unmount");
+    navigator.geolocation.clearWatch(this.watchId);
   }
 
+  // render list item from firebase
   renderListMarker() {
     console.log("RENDER: " + this.state.shouldRenderListMarker);
     markers = [];
@@ -184,6 +213,7 @@ class MapRE extends Component {
     return markers;
   }
 
+  //  render one marker close to Pos GPS
   renderMarker() {
     if (this.state.getATM === true) {
       var marker = this.getMarkerCloseToCurrentPos(this.state);
@@ -207,6 +237,8 @@ class MapRE extends Component {
               longitude: parseFloat(this.state.gps.longitude)
             }}
             apikey={GOOGLE_MAPS_APIKEY}
+            strokeWidth={3}
+            strokeColor="hotpink"
           />
         </View>
       );
@@ -332,6 +364,24 @@ class MapRE extends Component {
     return data;
   }
 
+  getDataWithKey(dataState) {
+    database
+      .ref("VietTinBank")
+      .child(String(dataState.address.city))
+      .child(String(dataState.address.district))
+      .on("value", snap => {
+        snap.forEach(data => {
+          arrayMarker.push({
+            key: data.key,
+            data: data.val()
+          });
+        });
+      }),
+      { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 };
+
+    dataState.markers = arrayMarker;
+  }
+
   render() {
     var navigationView = (
       <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -354,6 +404,8 @@ class MapRE extends Component {
               style={styles.map}
               showsUserLocation={true}
               region={this.state.region}
+              mapType="terrain"
+              showsBuildings={false}
             >
               {this.renderListMarker()}
               {this.renderMarker()}
@@ -367,18 +419,6 @@ class MapRE extends Component {
             </TouchableOpacity>
           </View>
           <View style={styles.buttonContainer}>
-            <Button
-              // loadingProps={{ size: "large", color: "rgba(111, 202, 186, 1)" }}
-              icon={{ name: "search", type: "font-awesome" }}
-              title="FIND"
-              buttonStyle={{
-                backgroundColor: "#333",
-                borderColor: "transparent",
-                borderWidth: 0,
-                borderRadius: 10
-              }}
-              onPress={this.showAddress.bind(this)}
-            />
             <Button
               // loadingProps={{ size: "large", color: "rgba(111, 202, 186, 1)" }}
               icon={{ name: "search", type: "font-awesome" }}
