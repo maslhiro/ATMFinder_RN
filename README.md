@@ -14,6 +14,11 @@
 
 ## Demo 
 
+- Custom Marker 
+
+![giphy](https://user-images.githubusercontent.com/26876671/39203319-933cad78-481e-11e8-8c8f-03aa1fb88838.gif)
+
+
 - Get GPS
 
 ![gps](https://user-images.githubusercontent.com/26876671/39009023-a81a639a-4434-11e8-80bd-ffd983ac1b88.gif)

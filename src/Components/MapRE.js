@@ -2,19 +2,21 @@ import React, { Component, PropTypes } from "react";
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   Dimensions,
   TouchableHightLight,
   TouchableOpacity,
   DrawerLayoutAndroid
 } from "react-native";
-import MapView, { Marker, Callout } from "react-native-maps";
-import { Header, Button } from "react-native-elements";
+import MapView, { Marker, Callout, Circle } from "react-native-maps";
+import { Header, Button, colors } from "react-native-elements";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import firebase from "./FirebaseConfig";
 import Geocoder from "react-native-geocoder";
 import geolib from "geolib";
 import MapViewDirections from "react-native-maps-directions";
+import atm from "../../src/atm.png";
 
 const myIcon = <Icon name="crosshairs-gps" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
@@ -83,7 +85,7 @@ class MapRE extends Component {
               longitude: position.coords.longitude
             }
           });
-        })
+        });
       },
       error => console.log(error),
       {
@@ -222,22 +224,40 @@ class MapRE extends Component {
           <Marker
             key={marker.address}
             title={marker.key}
+            description={marker.address}
+            pinColor="yellow"
             coordinate={{
               latitude: parseFloat(marker.latitude),
               longitude: parseFloat(marker.longitude)
             }}
-          />
+          >
+            <Image source={atm} style={{ width: 40, height: 40 }} />
+
+            <Callout tooltip={true}>
+              <Text
+                style={{
+                  backgroundColor: "#333333",
+                  color: "#ffff",
+                  width: 200,
+                  height: 60
+                }}
+              >
+                {marker.key}{"\n"}
+                {marker.address}
+              </Text>
+            </Callout>
+          </Marker>
           <MapViewDirections
             origin={{
-              latitude: parseFloat(marker.latitude),
-              longitude: parseFloat(marker.longitude)
-            }}
-            destination={{
               latitude: parseFloat(this.state.gps.latitude),
               longitude: parseFloat(this.state.gps.longitude)
             }}
+            destination={{
+              latitude: parseFloat(marker.latitude),
+              longitude: parseFloat(marker.longitude)
+            }}
             apikey={GOOGLE_MAPS_APIKEY}
-            strokeWidth={3}
+            strokeWidth={5}
             strokeColor="hotpink"
           />
         </View>
