@@ -20,6 +20,7 @@ import atm from "../../src/atm.png";
 
 const myIcon = <Icon name="crosshairs-gps" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
+
 class MapRE extends Component {
   constructor(props) {
     super(props);
@@ -36,18 +37,18 @@ class MapRE extends Component {
         longitudeDelta: 0.0221
       },
       gps: {
-        latitude: 20,
-        longitude: 20
+        latitude: 10,
+        longitude: 106
       },
       address: {
         city: "city",
         district: "district"
       },
+      findNext_MODE:false,
       markers: arrayMarker,
       shouldRenderListMarker: false,
       getATM: false,
       getGPS: true,
-      updateLatLong: false
     };
   }
 
@@ -131,41 +132,8 @@ class MapRE extends Component {
     }
 
     // Get GPS
-    // if (nextState.getGPS === true) {
-    //   navigator.geolocation.getCurrentPosition(
-    //     position => {
-    //       (nextState.region = {
-    //         latitude: position.coords.latitude,
-    //         longitude: position.coords.longitude,
-    //         latitudeDelta: 0.01,
-    //         longitudeDelta: 0.01
-    //       }),
-    //         (nextState.gps = {
-    //           latitude: position.coords.latitude,
-    //           longitude: position.coords.longitude
-    //         }),
-    //         Geocoder.geocodePosition({
-    //           lat: position.coords.latitude,
-    //           lng: position.coords.longitude
-    //         }).then(res => {
-    //           //  res[1].locality //Ho Chi Minh City
-    //           //  res[1].feature,// Trường tho
-    //           //  res[2].feature,
-    //           //  res[3].feature, //Phước long
-    //           //  res[4].feature ,//Thủ đức,
-    //           //  res[5].feature ,//Ho Chi Minh City
-    //           nextState.address = {
-    //             city: res[5].feature,
-    //             district: formatVietnamese(res[4].feature)
-    //           };
-    //         });
-    //     },
-    //     error => {
-    //       console.log(error);
-    //     },
-    //     { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 }
-    //   );
-    // }
+    if (nextState.getGPS === true) {
+    }
 
     // Get Marker Close to Current Pos
     if (nextState.getATM === true) {
@@ -215,55 +183,70 @@ class MapRE extends Component {
     return markers;
   }
 
-  //  render one marker close to Pos GPS
-  renderMarker() {
+  //  render one marker with Directions
+  renderMarkerCloseToPos() {
     if (this.state.getATM === true) {
       var marker = this.getMarkerCloseToCurrentPos(this.state);
-      return (
-        <View>
-          <Marker
-            key={marker.address}
-            title={marker.key}
-            description={marker.address}
-            pinColor="yellow"
-            coordinate={{
-              latitude: parseFloat(marker.latitude),
-              longitude: parseFloat(marker.longitude)
-            }}
-          >
-            <Image source={atm} style={{ width: 40, height: 40 }} />
 
-            <Callout tooltip={true}>
-              <Text
-                style={{
-                  backgroundColor: "#333333",
-                  color: "#ffff",
-                  width: 200,
-                  height: 60
-                }}
-              >
-                {marker.key}{"\n"}
-                {marker.address}
-              </Text>
-            </Callout>
-          </Marker>
-          <MapViewDirections
-            origin={{
-              latitude: parseFloat(this.state.gps.latitude),
-              longitude: parseFloat(this.state.gps.longitude)
-            }}
-            destination={{
-              latitude: parseFloat(marker.latitude),
-              longitude: parseFloat(marker.longitude)
-            }}
-            apikey={GOOGLE_MAPS_APIKEY}
-            strokeWidth={5}
-            strokeColor="hotpink"
-          />
-        </View>
-      );
+      return this.renderMarkerWithDirection(marker);
     }
     console.log("No Marker");
+  }
+
+  renderMarkerWithDirection(dataMarker) {
+    var marker = {
+      key: dataMarker.key ? dataMarker.key : "",
+      address: dataMarker.address ? dataMarker.address : "",
+      amount: dataMarker.amount ? dataMarker.longitude : "",
+      workingHour: dataMarker.longitude ? dataMarker.amount : 0,
+      latitude: dataMarker.latitude ? dataMarker.latitude : 20,
+      longitude: dataMarker.longitude ? dataMarker.longitude : 20
+    };
+    return (
+      <View>
+        <Marker
+          key={marker.address}
+          title={marker.key}
+          description={marker.address}
+          coordinate={{
+            latitude: parseFloat(marker.latitude),
+            longitude: parseFloat(marker.longitude)
+          }}
+        >
+          <Image source={atm} style={{ width: 40, height: 40 }} />
+
+          <Callout tooltip={true}>
+            <View style={{backgroundColor:"7D7D7D",}}> 
+              <Text
+              style={{
+                backgroundColor: "#7D7D7D",
+                color: "#ffff",
+                width: 200,
+                height: 60
+              }}
+            >
+              {marker.key}
+              {"\n"}
+              {marker.address}
+            </Text></View>
+           
+          </Callout>
+        </Marker>
+        <MapViewDirections
+          origin={{
+            latitude: parseFloat(this.state.gps.latitude),
+            longitude: parseFloat(this.state.gps.longitude)
+          }}
+          destination={{
+            latitude: parseFloat(marker.latitude),
+            longitude: parseFloat(marker.longitude)
+          }}
+          apikey={GOOGLE_MAPS_APIKEY}
+          strokeWidth={5}
+          strokeColor="hotpink"
+        />
+      </View>
+    );
   }
 
   showAddress() {
@@ -295,6 +278,7 @@ class MapRE extends Component {
   }
 
   getMarkerCloseToCurrentPos(dataState) {
+    // Get phần tử đầu tiên và tính khoảng cách đến Pos GPS
     var data = {
       key: "",
       address: "",
@@ -336,6 +320,7 @@ class MapRE extends Component {
       latitude: 20,
       longitude: 20
     };
+  
     for (marker of dataState.markers) {
       temp = {
         key: marker.key,
@@ -379,6 +364,7 @@ class MapRE extends Component {
         );
       }
     }
+
     console.log("DATA MIN");
     console.log(data);
     return data;
@@ -427,8 +413,17 @@ class MapRE extends Component {
               mapType="terrain"
               showsBuildings={false}
             >
+              <Circle center={{
+               latitude: parseFloat(this.state.gps.latitude),
+               longitude: parseFloat(this.state.gps.longitude)
+              }}
+              // strokeWidth = { 1 }
+              // strokeColor = { '#1a66ff' }
+              fillColor = { 'rgba(230,238,255,0.5)' }
+              radius={10}
+          />
               {this.renderListMarker()}
-              {this.renderMarker()}
+              {this.renderMarkerCloseToPos()}
             </MapView>
             <TouchableOpacity
               activeOpacity={0.7}
@@ -525,7 +520,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     opacity: 0.6,
     zIndex: 10
-  }
+  },
+  
 });
 
 function formatVietnamese(str) {
