@@ -11,14 +11,14 @@ import {
 } from "react-native";
 import MapView, { Marker, Callout, Circle } from "react-native-maps";
 import { Header, Button, colors } from "react-native-elements";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Icon from "react-native-vector-icons/MaterialIcons";
 import firebase from "./FirebaseConfig";
 import Geocoder from "react-native-geocoder";
 import geolib from "geolib";
 import MapViewDirections from "react-native-maps-directions";
 import atm from "../../src/atm.png";
 
-const myIcon = <Icon name="crosshairs-gps" size={30} color="#333" />;
+const findIcon = <Icon name="search" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
 
 class MapRE extends Component {
@@ -33,7 +33,7 @@ class MapRE extends Component {
       region: {
         latitude: 10.8702117,
         longitude: 106.8037364,
-        latitudeDelta: 0.0422,
+        latitudeDelta: 0.0222,
         longitudeDelta: 0.0221
       },
       gps: {
@@ -157,6 +157,7 @@ class MapRE extends Component {
   componentWillUnmount() {
     console.log("Will Unmount");
     navigator.geolocation.clearWatch(this.watchId);
+
   }
 
   // render list item from firebase
@@ -193,7 +194,7 @@ class MapRE extends Component {
     console.log("No Marker");
   }
 
-  renderMarkerWithDirection(dataMarker) {
+  renderMarkerWithDirection(dataMarker,color="red") {
     var marker = {
       key: dataMarker.key ? dataMarker.key : "",
       address: dataMarker.address ? dataMarker.address : "",
@@ -208,14 +209,15 @@ class MapRE extends Component {
           key={marker.address}
           title={marker.key}
           description={marker.address}
+          pinColor={String(color)}
           coordinate={{
             latitude: parseFloat(marker.latitude),
             longitude: parseFloat(marker.longitude)
           }}
         >
-          <Image source={atm} style={{ width: 40, height: 40 }} />
+          {/* <Image source={atm} style={{ width: 40, height: 40 }} /> */}
 
-          <Callout tooltip={true}>
+          {/* <Callout tooltip={true}>
             <View style={{backgroundColor:"7D7D7D",}}> 
               <Text
               style={{
@@ -230,7 +232,7 @@ class MapRE extends Component {
               {marker.address}
             </Text></View>
            
-          </Callout>
+          </Callout> */}
         </Marker>
         <MapViewDirections
           origin={{
@@ -242,14 +244,14 @@ class MapRE extends Component {
             longitude: parseFloat(marker.longitude)
           }}
           apikey={GOOGLE_MAPS_APIKEY}
-          strokeWidth={5}
+          strokeWidth={8}
           strokeColor="hotpink"
         />
       </View>
     );
   }
 
-  showAddress() {
+  showListATM() {
     this.setState({
       shouldRenderListMarker: true,
       getGPS: false,
@@ -428,9 +430,10 @@ class MapRE extends Component {
             <TouchableOpacity
               activeOpacity={0.7}
               style={styles.mapButton}
-              onPress={this.getGPS.bind(this)}
+              onPress={this.getATM.bind(this)}
+              // onPress={this.getGPS.bind(this)}
             >
-              {myIcon}
+              {findIcon}
             </TouchableOpacity>
           </View>
           <View style={styles.buttonContainer}>
@@ -444,7 +447,7 @@ class MapRE extends Component {
                 borderWidth: 0,
                 borderRadius: 10
               }}
-              onPress={this.getATM.bind(this)}
+              // onPress={this.getATM.bind(this)}
             />
           </View>
         </View>
