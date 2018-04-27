@@ -14,6 +14,10 @@
 
 ## Demo 
 
+- Update UI: 
+<img width="275" alt="distance" src="https://user-images.githubusercontent.com/26876671/39348037-acac7c68-4a1f-11e8-9ab6-9718e0621403.png">
+
+
 - Custom Marker 
 
 ![giphy](https://user-images.githubusercontent.com/26876671/39203319-933cad78-481e-11e8-8c8f-03aa1fb88838.gif)

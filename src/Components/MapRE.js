@@ -28,7 +28,8 @@ class MapRE extends Component {
     Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
     this.openDrawer = this.openDrawer.bind(this);
     arrayMarker = [];
-
+    findNext_MODE=false,
+    //distance="",
     this.state = {
       region: {
         latitude: 10.8702117,
@@ -44,7 +45,8 @@ class MapRE extends Component {
         city: "city",
         district: "district"
       },
-      findNext_MODE:false,
+      // findNext_MODE:false,
+      distance:"",
       markers: arrayMarker,
       shouldRenderListMarker: false,
       getATM: false,
@@ -188,7 +190,8 @@ class MapRE extends Component {
   renderMarkerCloseToPos() {
     if (this.state.getATM === true) {
       var marker = this.getMarkerCloseToCurrentPos(this.state);
-
+      // distance=this.getDistance(marker);
+      // console.log("Distance :"+distance)
       return this.renderMarkerWithDirection(marker);
     }
     console.log("No Marker");
@@ -244,7 +247,7 @@ class MapRE extends Component {
             longitude: parseFloat(marker.longitude)
           }}
           apikey={GOOGLE_MAPS_APIKEY}
-          strokeWidth={8}
+          strokeWidth={6}
           strokeColor="hotpink"
         />
       </View>
@@ -390,6 +393,18 @@ class MapRE extends Component {
     dataState.markers = arrayMarker;
   }
 
+  getDistance(){
+    var marker = this.getMarkerCloseToCurrentPos(this.state);
+    return (geolib.getDistance({
+    latitude: marker.latitude,
+    longitude: marker.longitude
+  }, {
+    latitude: this.state.gps.latitude,
+    longitude: this.state.gps.longitude
+  }))
+  
+}
+
   render() {
     var navigationView = (
       <View style={{ flex: 1, backgroundColor: "#fff" }}>
@@ -439,8 +454,8 @@ class MapRE extends Component {
           <View style={styles.buttonContainer}>
             <Button
               // loadingProps={{ size: "large", color: "rgba(111, 202, 186, 1)" }}
-              icon={{ name: "search", type: "font-awesome" }}
-              title="SHOW"
+              //icon={{ name: "search", type: "font-awesome" }}
+              title={this.state.getATM?"Distance: "+this.getDistance()+" m":"Distance: 0m"}
               buttonStyle={{
                 backgroundColor: "#333",
                 borderColor: "transparent",
