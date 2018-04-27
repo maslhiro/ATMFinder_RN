@@ -1,4 +1,6 @@
 rootProject.name = 'DemoApp'
+include ':react-native-splash-screen'
+project(':react-native-splash-screen').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-splash-screen/android')
 
 include ':app'
 include ':react-native-maps'
@@ -6,3 +8,6 @@ project(':react-native-maps').projectDir = new File(rootProject.projectDir, '../
 
 include ':react-native-geocoder'
 project(':react-native-geocoder').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-geocoder/android')
+
+include ':react-native-splash-screen'   
+project(':react-native-splash-screen').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-splash-screen/android')
