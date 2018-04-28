@@ -206,12 +206,14 @@ class MapRE extends Component {
       latitude: dataMarker.latitude ? dataMarker.latitude : 20,
       longitude: dataMarker.longitude ? dataMarker.longitude : 20
     };
+    var address = String(marker.address)
     return (
       <View>
         <Marker
           key={marker.address}
           title={marker.key}
-          description={marker.address}
+          description={address}
+        
           pinColor={String(color)}
           coordinate={{
             latitude: parseFloat(marker.latitude),
@@ -395,13 +397,14 @@ class MapRE extends Component {
 
   getDistance(){
     var marker = this.getMarkerCloseToCurrentPos(this.state);
-    return (geolib.getDistance({
+    var distance= (geolib.getDistance({
     latitude: marker.latitude,
     longitude: marker.longitude
   }, {
     latitude: this.state.gps.latitude,
     longitude: this.state.gps.longitude
-  }))
+  }));
+  return distance>9000?0:distance;
   
 }
 
