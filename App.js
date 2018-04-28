@@ -3,7 +3,8 @@ import {
   Platform,
   StyleSheet,
   Text,
-  View
+  View, 
+  StatusBar
 } from 'react-native';
 console.disableYellowBox=true;
 //import Map from './src/Components/Map'
@@ -14,12 +15,21 @@ console.disableYellowBox=true;
 // Dinh vi va get dia chi (Quận + Thành Phố)
 //import MapGPS from './src/Components/MapGPS'
 import MapRE from './src/Components/MapRE'
+import SplashScreen from 'react-native-splash-screen'
+
 export default class App extends Component {
+
+  componentDidMount() {
+    SplashScreen.hide();
+  }
+
   render() {
-    return (
-      
+    return (    
       <View style={styles.container}>
-    <MapRE/>
+        <StatusBar
+        backgroundColor = "#4f6d7a"
+        barStyle = "light-content"/>
+        <MapRE/>
       </View>
     );
   }
