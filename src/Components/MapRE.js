@@ -165,25 +165,24 @@ class MapRE extends Component {
   // render list item from firebase
   renderListMarker() {
     console.log("RENDER: " + this.state.shouldRenderListMarker);
-    markers = [];
+    
     if (this.state.shouldRenderListMarker === true) {
       console.log("RENDER Marker");
-      for (marker of this.state.markers) {
-        markers.push(
-          <Marker
-            key={marker.data.address}
-            title={marker.key}
-            coordinate={{
-              latitude: parseFloat(marker.data.lat),
-              longitude: parseFloat(marker.data.long)
-            }}
-          />
-        );
-      }
-      return markers;
+      return (this.state.markers.map(marker => (
+        <Marker
+          key={marker.key}
+          coordinate={{
+            latitude: parseFloat(marker.data.lat),
+            longitude: parseFloat(marker.data.long)
+          }}
+          title={marker.key}
+          //onCalloutPress={() => this.markerClick(marker)}
+          description={marker.data.Address}
+        />
+      )));
     }
     console.log("Empty Array Marker");
-    return markers;
+    
   }
 
   //  render one marker with Directions
@@ -395,8 +394,8 @@ class MapRE extends Component {
     dataState.markers = arrayMarker;
   }
 
-  getDistance(){
-    var marker = this.getMarkerCloseToCurrentPos(this.state);
+  getDistance(marker){
+    // var marker = this.getMarkerCloseToCurrentPos(this.state);
     var distance= (geolib.getDistance({
     latitude: marker.latitude,
     longitude: marker.longitude
@@ -458,7 +457,9 @@ class MapRE extends Component {
             <Button
               // loadingProps={{ size: "large", color: "rgba(111, 202, 186, 1)" }}
               //icon={{ name: "search", type: "font-awesome" }}
-              title={this.state.getATM?"Distance: "+this.getDistance()+" m":"Distance: 0m"}
+              title = {
+                this.state.getATM ? "Distance: " + this.getDistance(this.getMarkerCloseToCurrentPos(this.state)) + " m" : "Distance: 0 m"
+              }
               buttonStyle={{
                 backgroundColor: "#333",
                 borderColor: "transparent",
