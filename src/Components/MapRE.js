@@ -431,6 +431,7 @@ class MapRE extends Component {
               region={this.state.region}
               mapType="terrain"
               showsBuildings={false}
+              onRegionChangeComplete={e => this.setState({ region: e })}
             >
               <Circle center={{
                latitude: parseFloat(this.state.gps.latitude),
