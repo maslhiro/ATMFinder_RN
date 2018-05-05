@@ -11,10 +11,10 @@ console.disableYellowBox=true;
 // In list marker
 //import MapTest from './src/Components/MapTest'
 // In list marker tu FireBase
-import MapFireBase from './src/Components/MapFireBase'
+//import MapFireBase from './src/Components/MapFireBase'
 // Dinh vi va get dia chi (Quận + Thành Phố)
 //import MapGPS from './src/Components/MapGPS'
-//import MapRE from './src/Components/MapRE'
+import MapRE from './src/Components/MapRE'
 import SplashScreen from 'react-native-splash-screen'
 
 export default class App extends Component {
@@ -29,7 +29,7 @@ export default class App extends Component {
         <StatusBar
         backgroundColor = "#4f6d7a"
         barStyle = "light-content"/>
-        <MapFireBase/>
+        <MapRE/>
       </View>
     );
   }

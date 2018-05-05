@@ -28,8 +28,7 @@ class MapRE extends Component {
     Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
     this.openDrawer = this.openDrawer.bind(this);
     arrayMarker = [];
-    findNext_MODE=false,
-    //distance="",
+    this.mapView=null;
     this.state = {
       region: {
         latitude: 10.8702117,
@@ -52,6 +51,7 @@ class MapRE extends Component {
       getATM: false,
       getGPS: true,
     };
+   
   }
 
   componentWillMount() {
@@ -88,12 +88,12 @@ class MapRE extends Component {
               longitude: position.coords.longitude
             }
           });
-        });
+        }) .catch(err => console.log(err));;
       },
       error => console.log(error),
       {
         enableHighAcuracy: true,
-        timeout: 20000,
+        timeout: 30000,
         maximumAge: 1000,
         distanceFilter: 1
       }
@@ -250,6 +250,11 @@ class MapRE extends Component {
           apikey={GOOGLE_MAPS_APIKEY}
           strokeWidth={6}
           strokeColor="hotpink"
+          onReady={(result) => {
+            this.mapView.fitToCoordinates(result.coordinates, {});
+            // return km
+            console.log("Result : "+result.distance)
+          }}
         />
       </View>
     );
@@ -403,7 +408,7 @@ class MapRE extends Component {
     latitude: this.state.gps.latitude,
     longitude: this.state.gps.longitude
   }));
-  return distance>9000?0:distance;
+  return distance>90000?0:distance;
   
 }
 
@@ -431,24 +436,17 @@ class MapRE extends Component {
               region={this.state.region}
               mapType="terrain"
               showsBuildings={false}
-              onRegionChangeComplete={e => this.setState({ region: e })}
+              ref={c => this.mapView = c}
+           //  onRegionChangeComplete={e => this.setState({ region: e })}
             >
-              <Circle center={{
-               latitude: parseFloat(this.state.gps.latitude),
-               longitude: parseFloat(this.state.gps.longitude)
-              }}
-              // strokeWidth = { 1 }
-              // strokeColor = { '#1a66ff' }
-              fillColor = { 'rgba(230,238,255,0.5)' }
-              radius={10}
-          />
+             
               {this.renderListMarker()}
               {this.renderMarkerCloseToPos()}
             </MapView>
             <TouchableOpacity
               activeOpacity={0.7}
               style={styles.mapButton}
-              onPress={this.getATM.bind(this)}
+              onPress={()=>this.getATM()}
               // onPress={this.getGPS.bind(this)}
             >
               {findIcon}
@@ -490,7 +488,7 @@ class MapRE extends Component {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: 0,
+    top: 70,
     left: 0,
     right: 0,
     bottom: 0,
