@@ -130,6 +130,9 @@ class MapRE extends Component {
     if (nextState.shouldRenderListMarker === true) {
       this.getGeoArr(nextState)
       this.getDataWithKey(nextState)
+      nextState.markers=this.getArrayMarker(nextState)
+      console.log(nextState.markers)
+   //   this.getArrayMarker(nextState)
     }
 
     // Get GPS
@@ -143,6 +146,7 @@ class MapRE extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+
     prevState.shouldRenderListMarker = false;
     prevState.getGPS = false;
     prevState.getATM = false;
@@ -172,12 +176,12 @@ class MapRE extends Component {
         <Marker
           key={marker.key}
           coordinate={{
-            latitude: parseFloat(marker.data.lat),
-            longitude: parseFloat(marker.data.long)
+            latitude: parseFloat(marker.latitude),
+            longitude: parseFloat(marker.longitude)
           }}
           title={marker.key}
           onCalloutPress={() => this.markerClick(marker)}
-          description={marker.data.Address}
+          description={marker.address}
         />
       )));
     }
@@ -189,11 +193,11 @@ class MapRE extends Component {
     this.setState({
       currentMarker: {
         key: data.key ? data.key : "",
-        address: data.data.Address ? data.data.Address : "",
-        amount: data.data.Amount ? data.data.Amount : "",
-        workingHour: data.data.WorkingHour ? data.data.WorkingHour : 0,
-        latitude: data.data.lat ? data.data.lat : 20,
-        longitude: data.data.long ? data.data.long : 20
+        address: data.address ? data.address : "",
+        amount: data.amount ? data.amount : "",
+        workingHour: data.qqorkingHour ? data.workingHour : 0,
+        latitude: data.latitude ? data.latitude : 20,
+        longitude: data.longitude ? data.longitude : 20
       },
       renderDirection: true
     });
@@ -317,8 +321,8 @@ class MapRE extends Component {
   }
 
   addDistance(arrayMarker){
-    temp =[],
-    arrayMarker.map(marker=>{
+    temp =[];
+   for(marker of arrayMarker){
       temp.push({
         key: marker.key,
         address: marker.data.Address,
@@ -334,7 +338,7 @@ class MapRE extends Component {
           longitude: this.state.gps.longitude
         })
       })
-    })
+    }
     return temp;
   }
 
@@ -431,7 +435,45 @@ class MapRE extends Component {
     return data;
   }
 
+  getArrayMarker(dataState){
+    var data = {
+      key: "",
+      address: "",
+      amount: "",
+      workingHour: "",
+      latitude: 20,
+      longitude: 20
+    }, final =[];
+    var MAX_DISTANCE=3000;
+    for (marker of dataState.markers) {
+      data = {
+        key: marker.key,
+        address: marker.data.Address,
+        amount: marker.data.Amount,
+        workingHour: marker.data.WorkingHour,
+        latitude: marker.data.lat,
+        longitude: marker.data.long
+      };
+      if(geolib.getDistance(
+        {
+          latitude: data.latitude,
+          longitude: data.longitude
+        },
+        {
+          latitude: dataState.gps.latitude,
+          longitude: dataState.gps.longitude
+        }
+      )<=MAX_DISTANCE)
+      {
+        final.push(data)
+      }
+    }
+    return final
+
+  }
+
   getDataWithKey(dataState) {
+    arrayMarker=[]
     dataState.arrayDistrict.map(add=>{
       dataState.arrayBank.map(item=>{
         database
@@ -451,8 +493,8 @@ class MapRE extends Component {
      
     })
   
-
-    dataState.markers = arrayMarker;
+    
+    dataState.markers =arrayMarker;
   }
 
   getDistance(marker){
@@ -483,8 +525,11 @@ async  getGeoArr(dataState) {
 render() {
   console.log("Vincenty")
   console.log(this.state.arrayVincenty)
-   console.log("District")
-   console.log(this.state.arrayDistrict)
+  //  console.log("District")
+  //  console.log(this.state.arrayDistrict)
+  console.log("Marker")
+  console.log(this.state.markers)
+  
     var navigationView = (
       <View style={{ flex: 1, backgroundColor: "#fff", justifyContent:"center"}}>
          <View style={{flex:1,alignItems:"center",padding:20}}>
@@ -538,10 +583,10 @@ render() {
               showsUserLocation={true}
               showsMyLocationButton={true}
               region={this.state.region}
-              mapType="terrain"
+              // mapType="terrain"
               showsBuildings={false}
               ref={c => this.mapView = c}
-              //onRegionChangeComplete={e => this.setState({ region: e })}
+              onRegionChangeComplete={e => this.setState({ region: e })}
             >
              
               {this.renderListMarker()}
@@ -551,8 +596,8 @@ render() {
             <TouchableOpacity
               activeOpacity={0.7}
               style={styles.mapButton}
-              onPress={()=>this.getATM()}
-              // onPress={this.getGPS.bind(this)}
+              //onPress={()=>this.getATM()}
+              onPress={()=>{this.showListATM()}}
             >
               {findIcon}
             </TouchableOpacity>
@@ -761,7 +806,6 @@ async function getGeo(pos) {
 
   
 }
-
 
 function getArrMarkerBound(latGPS, longGPS,radian, dist) {
   var i = 0,
