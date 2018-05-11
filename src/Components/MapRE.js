@@ -16,19 +16,25 @@ import firebase from "./FirebaseConfig";
 import Geocoder from "react-native-geocoder";
 import geolib from "geolib";
 import MapViewDirections from "react-native-maps-directions";
-import atm from "../../src/atm.png";
+import girl from "../../src/girl.png";
+import logo_vietcombank from "./../../src/logo-vietcombank.jpg"
 
 const findIcon = <Icon name="search" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
+
+const titleHeader = "호앙 난";
+const colorButtonDrawer="#E9FAE3"
+const colorTextButtonDrawer="#00000"
 
 class MapRE extends Component {
   constructor(props) {
     super(props);
     database = firebase.database();
-    Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
+   // Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
     this.openDrawer = this.openDrawer.bind(this);
     arrayMarker = [];
     this.mapView=null;
+   
     this.state = {
       region: {
         latitude: 10.8702117,
@@ -40,14 +46,16 @@ class MapRE extends Component {
         latitude: 10,
         longitude: 106
       },
-      address: {
-        city: "city",
-        district: "district"
-      },
+      arrayBank:["VietComBank","VietTinBank"],
+      arrayDistrict:[],
       // findNext_MODE:false,
       distance:"",
+      arrayVincenty:[],
+      currentMarker:[],
       markers: arrayMarker,
       shouldRenderListMarker: false,
+      renderDirection: false,
+      getAdress:false,
       getATM: false,
       getGPS: true,
     };
@@ -61,22 +69,10 @@ class MapRE extends Component {
   componentDidMount() {
     console.log("Did mount");
     this.watchId = navigator.geolocation.watchPosition(
-      position => {
-        Geocoder.geocodePosition({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        }).then(res => {
-          //  res[1].locality //Ho Chi Minh City
-          //  res[1].feature,// Trường tho
-          //  res[2].feature,
-          //  res[3].feature, //Phước long
-          //  res[4].feature ,//Thủ đức,
-          //  res[5].feature ,//Ho Chi Minh City
+        position => {
+
           this.setState({
-            address: {
-              city: res[5].feature,
-              district: formatVietnamese(res[4].feature)
-            },
+
             region: {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
@@ -86,9 +82,12 @@ class MapRE extends Component {
             gps: {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude
-            }
-          });
-        }) .catch(err => console.log(err));;
+            },
+            arrayVincenty: getArrMarkerBound(position.coords.latitude,position.coords.longitude,45,5),
+            //  arrayDistrict:this.getGeoArr()
+            
+            });
+      
       },
       error => console.log(error),
       {
@@ -112,7 +111,8 @@ class MapRE extends Component {
     if (
       nextState.getGPS === true ||
       nextState.shouldRenderListMarker === true ||
-      nextState.getATM === true
+      nextState.getATM === true||
+      nextState.renderDirection === true
     ) {
       return true;
     }
@@ -125,12 +125,11 @@ class MapRE extends Component {
     );
     console.log("WILL UPDATE: Get Gps " + nextState.getGPS);
     console.log("WILL UPDATE: Get ATM " + nextState.getATM);
-    console.log("WILL UPDATE: City " + nextState.address.city);
-    console.log("WILL UPDATE: District " + nextState.address.district);
 
     // Get Array Markers from FireBase
     if (nextState.shouldRenderListMarker === true) {
-      //this.getDataWithKey(nextState)
+      this.getGeoArr(nextState)
+      this.getDataWithKey(nextState)
     }
 
     // Get GPS
@@ -147,13 +146,14 @@ class MapRE extends Component {
     prevState.shouldRenderListMarker = false;
     prevState.getGPS = false;
     prevState.getATM = false;
+    prevState.renderDirection = false;
     console.log(
       "DID UPDATE: Render List Markers " + prevState.shouldRenderListMarker
     );
     console.log("DID UPDATE: Get Gps " + prevState.getGPS);
     console.log("DID UPDATE: Get ATM " + prevState.getATM);
-    console.log("DID UPDATE: City " + prevState.address.city);
-    console.log("DID UPDATE: Address " + prevState.address.district);
+  //  console.log("DID UPDATE: City " + prevState.address.city);
+  //  console.log("DID UPDATE: Address " + prevState.address.district);
   }
 
   componentWillUnmount() {
@@ -176,13 +176,27 @@ class MapRE extends Component {
             longitude: parseFloat(marker.data.long)
           }}
           title={marker.key}
-          //onCalloutPress={() => this.markerClick(marker)}
+          onCalloutPress={() => this.markerClick(marker)}
           description={marker.data.Address}
         />
       )));
     }
     console.log("Empty Array Marker");
     
+  }
+
+  markerClick(data) {
+    this.setState({
+      currentMarker: {
+        key: data.key ? data.key : "",
+        address: data.data.Address ? data.data.Address : "",
+        amount: data.data.Amount ? data.data.Amount : "",
+        workingHour: data.data.WorkingHour ? data.data.WorkingHour : 0,
+        latitude: data.data.lat ? data.data.lat : 20,
+        longitude: data.data.long ? data.data.long : 20
+      },
+      renderDirection: true
+    });
   }
 
   //  render one marker with Directions
@@ -219,24 +233,7 @@ class MapRE extends Component {
             longitude: parseFloat(marker.longitude)
           }}
         >
-          {/* <Image source={atm} style={{ width: 40, height: 40 }} /> */}
-
-          {/* <Callout tooltip={true}>
-            <View style={{backgroundColor:"7D7D7D",}}> 
-              <Text
-              style={{
-                backgroundColor: "#7D7D7D",
-                color: "#ffff",
-                width: 200,
-                height: 60
-              }}
-            >
-              {marker.key}
-              {"\n"}
-              {marker.address}
-            </Text></View>
-           
-          </Callout> */}
+   
         </Marker>
         <MapViewDirections
           origin={{
@@ -246,6 +243,33 @@ class MapRE extends Component {
           destination={{
             latitude: parseFloat(marker.latitude),
             longitude: parseFloat(marker.longitude)
+          }}
+          apikey={GOOGLE_MAPS_APIKEY}
+          strokeWidth={6}
+          strokeColor="hotpink"
+          onReady={(result) => {
+            this.mapView.fitToCoordinates(result.coordinates, {});
+            // return km
+            console.log("Result : "+result.distance)
+          }}
+        />
+      </View>
+    );
+  }
+
+  renderDirection(){
+    console.log("RENDER DIRECTION: "+this.state.renderDirection)
+    if(this.state.renderDirection===true)
+    return(
+      <View>
+        <MapViewDirections
+          origin={{
+            latitude: parseFloat(this.state.gps.latitude),
+            longitude: parseFloat(this.state.gps.longitude)
+          }}
+          destination={{
+            latitude: parseFloat(this.state.currentMarker.latitude),
+            longitude: parseFloat(this.state.currentMarker.longitude)
           }}
           apikey={GOOGLE_MAPS_APIKEY}
           strokeWidth={6}
@@ -286,6 +310,32 @@ class MapRE extends Component {
 
   openDrawer() {
     this.refs["DRAWER_REF"].openDrawer();
+  }
+
+  closeDrawer() {
+    this.refs["DRAWER_REF"].closeDrawer();
+  }
+
+  addDistance(arrayMarker){
+    temp =[],
+    arrayMarker.map(marker=>{
+      temp.push({
+        key: marker.key,
+        address: marker.data.Address,
+        amount: marker.data.Amount,
+        workingHour: marker.data.WorkingHour,
+        latitude: marker.data.lat,
+        longitude: marker.data.long,
+        distance:geolib.getDistance({
+          latitude: marker.latitude,
+          longitude: marker.longitude
+        }, {
+          latitude: this.state.gps.latitude,
+          longitude: this.state.gps.longitude
+        })
+      })
+    })
+    return temp;
   }
 
   getMarkerCloseToCurrentPos(dataState) {
@@ -382,25 +432,30 @@ class MapRE extends Component {
   }
 
   getDataWithKey(dataState) {
-    database
-      .ref("VietTinBank")
-      .child(String(dataState.address.city))
-      .child(String(dataState.address.district))
-      .on("value", snap => {
-        snap.forEach(data => {
-          arrayMarker.push({
-            key: data.key,
-            data: data.val()
+    dataState.arrayDistrict.map(add=>{
+      dataState.arrayBank.map(item=>{
+        database
+        .ref(String(item))
+        .child(String(add.city))
+        .child(String(add.district))
+        .on("value", snap => {
+          snap.forEach(data => {
+            arrayMarker.push({
+              key: String(item)+" "+data.key,
+              data: data.val()
+            });
           });
-        });
-      }),
-      { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 };
+        }),
+        { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 };
+      })
+     
+    })
+  
 
     dataState.markers = arrayMarker;
   }
 
   getDistance(marker){
-    // var marker = this.getMarkerCloseToCurrentPos(this.state);
     var distance= (geolib.getDistance({
     latitude: marker.latitude,
     longitude: marker.longitude
@@ -408,16 +463,64 @@ class MapRE extends Component {
     latitude: this.state.gps.latitude,
     longitude: this.state.gps.longitude
   }));
-  return distance>90000?0:distance;
-  
-}
+  return distance>90000?0:distance}
 
-  render() {
+async  getGeoArr(dataState) {
+  Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
+  var annotations = []
+ // var vincenty = getArrMarkerBound(this.state.gps.latitude, this.state.gps.longitude, 45, 5);
+  for (var l of dataState.arrayVincenty) {
+    var r = await getGeo(l)
+    if (r == null) continue; 
+    annotations.push(r)
+  
+  }
+  console.log("annotations")
+  console.log(annotations)
+  dataState.arrayDistrict=annotations 
+}
+   
+render() {
+  console.log("Vincenty")
+  console.log(this.state.arrayVincenty)
+   console.log("District")
+   console.log(this.state.arrayDistrict)
     var navigationView = (
-      <View style={{ flex: 1, backgroundColor: "#fff" }}>
-        <Text style={{ margin: 10, fontSize: 15, textAlign: "left" }}>
-          I'm in the Drawer!
-        </Text>
+      <View style={{ flex: 1, backgroundColor: "#fff", justifyContent:"center"}}>
+         <View style={{flex:1,alignItems:"center",padding:20}}>
+          <Image
+            style={{width: 80, height: 80}}
+            source={girl}    ></Image>
+
+        </View>
+        <View style={{ flex: 4, backgroundColor: "#fff", justifyConten: "center" }}>
+          <Button
+            raised
+            icon={{ name: 'cached' ,color:{colorTextButtonDrawer}}}
+            color={colorTextButtonDrawer}
+            title='BUTTON WITH ICON'
+            onPress={()=>this.showListATM()}
+            buttonStyle={{
+              backgroundColor: colorButtonDrawer,
+              borderColor: "transparent",
+              borderWidth: 0,
+              borderRadius: 10
+            }} />
+          <Text>   </Text>     
+          <Button
+            raised
+            icon={{ name: 'healing',color:{colorTextButtonDrawer} }}
+            title='BUTTON WITH ICON'
+            color={colorTextButtonDrawer}
+            onPress={()=>this.closeDrawer()}
+            buttonStyle={{
+              backgroundColor: colorButtonDrawer,
+              borderColor: "transparent",
+              borderWidth: 0,
+              borderRadius: 10
+            }} />
+        </View>      
+        
       </View>
     );
     return (
@@ -433,15 +536,17 @@ class MapRE extends Component {
               provider="google"
               style={styles.map}
               showsUserLocation={true}
+              showsMyLocationButton={true}
               region={this.state.region}
               mapType="terrain"
               showsBuildings={false}
               ref={c => this.mapView = c}
-           //  onRegionChangeComplete={e => this.setState({ region: e })}
+              //onRegionChangeComplete={e => this.setState({ region: e })}
             >
              
               {this.renderListMarker()}
-              {this.renderMarkerCloseToPos()}
+              {this.renderDirection()}
+            
             </MapView>
             <TouchableOpacity
               activeOpacity={0.7}
@@ -453,7 +558,7 @@ class MapRE extends Component {
             </TouchableOpacity>
           </View>
           <View style={styles.buttonContainer}>
-            <Button
+            {/* <Button
               // loadingProps={{ size: "large", color: "rgba(111, 202, 186, 1)" }}
               //icon={{ name: "search", type: "font-awesome" }}
               title = {
@@ -466,7 +571,7 @@ class MapRE extends Component {
                 borderRadius: 10
               }}
               // onPress={this.getATM.bind(this)}
-            />
+            /> */}
           </View>
         </View>
 
@@ -477,7 +582,7 @@ class MapRE extends Component {
             color: "#fff",
             onPress: () => this.openDrawer()
           }}
-          centerComponent={{ text: "호앙 난", style: { color: "#fff" } }}
+          centerComponent={{ text: titleHeader, style: { color: "#fff" } }}
           backgroundColor={"#333333"}
         />
       </DrawerLayoutAndroid>
@@ -541,8 +646,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     opacity: 0.6,
     zIndex: 10
+    
   },
-  
+
 });
 
 function formatVietnamese(str) {
@@ -561,6 +667,112 @@ function formatVietnamese(str) {
   str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
   str = str.replace(/Đ/g, "D");
   return str;
+}
+
+function getDistrict(str){
+  var temp = formatVietnamese(str);
+  // Get country
+  var country = temp.slice(temp.lastIndexOf(",")+2,temp.length);
+  temp= temp.slice(0,temp.lastIndexOf(","));
+  // Get City
+  var city = temp.slice(temp.lastIndexOf(",")+2,temp.length);
+  temp= temp.slice(0,temp.lastIndexOf(","));
+  // Get District
+  var district = temp.slice(temp.lastIndexOf(",")+2,temp.length);
+  temp= temp.slice(0,temp.lastIndexOf(","));
+  return ({
+    city:city,
+    district:district
+  });
+}
+
+function destVincenty(lat, lon, brng, dist) {
+  var a = 6378137,
+    b = 6356752.3142,
+    f = 1 / 298.257223563, // WGS-84 ellipsiod
+    s = dist * 1000, // km
+    alpha1 = brng.toRad(),
+    sinAlpha1 = Math.sin(alpha1),
+    cosAlpha1 = Math.cos(alpha1),
+    tanU1 = (1 - f) * Math.tan(lat.toRad()),
+    cosU1 = 1 / Math.sqrt(1 + tanU1 * tanU1),
+    sinU1 = tanU1 * cosU1,
+    sigma1 = Math.atan2(tanU1, cosAlpha1),
+    sinAlpha = cosU1 * sinAlpha1,
+    cosSqAlpha = 1 - sinAlpha * sinAlpha,
+    uSq = cosSqAlpha * (a * a - b * b) / (b * b),
+    A = 1 + uSq / 16384 * (4096 + uSq * (-768 + uSq * (320 - 175 * uSq))),
+    B = uSq / 1024 * (256 + uSq * (-128 + uSq * (74 - 47 * uSq))),
+    sigma = s / (b * A),
+    sigmaP = 2 * Math.PI;
+  while (Math.abs(sigma - sigmaP) > 1e-12) {
+    var cos2SigmaM = Math.cos(2 * sigma1 + sigma),
+      sinSigma = Math.sin(sigma),
+      cosSigma = Math.cos(sigma),
+      deltaSigma =
+        B *
+        sinSigma *
+        (cos2SigmaM +
+          B /
+            4 *
+            (cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM) -
+              B /
+                6 *
+                cos2SigmaM *
+                (-3 + 4 * sinSigma * sinSigma) *
+                (-3 + 4 * cos2SigmaM * cos2SigmaM)));
+    sigmaP = sigma;
+    sigma = s / (b * A) + deltaSigma;
+  }
+  var tmp = sinU1 * sinSigma - cosU1 * cosSigma * cosAlpha1,
+    lat2 = Math.atan2(
+      sinU1 * cosSigma + cosU1 * sinSigma * cosAlpha1,
+      (1 - f) * Math.sqrt(sinAlpha * sinAlpha + tmp * tmp)
+    ),
+    lambda = Math.atan2(
+      sinSigma * sinAlpha1,
+      cosU1 * cosSigma - sinU1 * sinSigma * cosAlpha1
+    ),
+    C = f / 16 * cosSqAlpha * (4 + f * (4 - 3 * cosSqAlpha)),
+    L =
+      lambda -
+      (1 - C) *
+        f *
+        sinAlpha *
+        (sigma +
+          C *
+            sinSigma *
+            (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM))),
+    revAz = Math.atan2(sinAlpha, -tmp); // final bearing
+  return {
+    lat: lat2.toDeg(),
+    lng: lon + L.toDeg()
+  };
+}
+
+async function getGeo(pos) {
+  try {
+   let res =  await Geocoder.geocodePosition(pos)
+   return(getDistrict(res[0].formattedAddress))
+
+  }catch (err) {
+    console.log(err);
+  }
+
+  
+}
+
+
+function getArrMarkerBound(latGPS, longGPS,radian, dist) {
+  var i = 0,
+    pos = {},
+    arrayVincenty = [];
+  for (i = 0; i < 360; i += radian) {
+    pos=destVincenty(latGPS, longGPS, i, dist);
+    console.log(pos)
+    arrayVincenty.push((pos));
+  }
+  return arrayVincenty;
 }
 
 export default MapRE;

@@ -33,6 +33,7 @@ export default class MapFireBase extends Component {
         latitude: 10.8230989,
         longitude: 106.6296638
       },
+      address:{},
       markers: arrayMarker,
       renderDirection: false,
       getAdress:false,
@@ -67,14 +68,14 @@ export default class MapFireBase extends Component {
   componentWillReceiveProps(nextProps) {}
 
   shouldComponentUpdate(nextProps, nextState) {
-  //  if(nextState.getAdress===false) return false;
+    if(nextState.getAdress===false) return false;
     return true;
   }
 
   componentWillUpdate(nextProps, nextState) {
-   // if(nextState.getAdress===true){
-      nextState.arrayVincenty=getArrMarkerBound(nextState.gps.latitude,nextState.gps.longitude,45,10)
-  //  }
+    //if(nextState.getAdress===true){
+      //nextState.arrayVincenty=getArrMarkerBound(nextState.gps.latitude,nextState.gps.longitude,45,10)
+    //}
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -83,26 +84,29 @@ export default class MapFireBase extends Component {
   }
 
   componentDidMount() {
-    
     this.watchId = navigator.geolocation.watchPosition(
       position => {
-        this.setState({
-          region: {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01
-          },
-          gps: {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          },
-         
+        Geocoder.geocodePosition({lat:position.coords.latitude,lng:position.coords.longitude}).then(res => {
+            this.setState({
+              region: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01
+              },
+              gps: {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+              },
+              //address:getDistrict(String(res[0].formattedAddress))
 
-        });
+
+            });
+          
+          })
+          .catch(err => console.log(err));
       },
-      error => console.log(error),
-      {
+      error => console.log(error), {
         enableHighAcuracy: true,
         timeout: 20000,
         maximumAge: 1000,
@@ -145,6 +149,21 @@ export default class MapFireBase extends Component {
     });
   }
  
+  async  getGeoArr() {
+    Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
+    var annotations = []
+    for (var l of this.state.arrayVincenty) {
+      var r = await getGeo(l)
+      if (r == null) continue; // or display error message or whatever
+      annotations.push(r)
+    
+    }
+    console.log("annotations")
+    console.log(annotations)
+    this.setState({arrayDistrict:annotations}); // move this after the loop if you want only one update
+  }
+     
+
   renderMarkerWithDirection() {
     console.log(this.state.currentMarker);
   //  if (this.state.renderDirection === true) {
@@ -180,12 +199,12 @@ export default class MapFireBase extends Component {
 
  
   render() {
-    console.log("Vincenty")
-    console.log(this.state.arrayVincenty)
+    console.log("Address")
+    console.log(this.state.address.district)
     return (
       <View style={styles.container}>
-{/* <Text onPress={()=>this.setState({getAdress:true})}Ư>Hiiii</Text> */}
-        <MapView
+     <Text onPress={()=>this.setState({getAdress:true})}>Hiiii</Text> 
+        {/* <MapView
           style={styles.map}
           showsUserLocation={true}
           region={this.state.region}
@@ -194,7 +213,7 @@ export default class MapFireBase extends Component {
         >
           {this.renderMarker()}
           {this.renderMarkerWithDirection()}
-        </MapView>
+        </MapView> */}
       </View>
     );
   }
@@ -241,12 +260,28 @@ function getDistrict(str){
 
 function getArrMarkerBound(latGPS, longGPS,radian, dist) {
   var i = 0,
+    pos = {},
     arrayVincenty = [];
   for (i = 0; i < 360; i += radian) {
-    arrayVincenty.push(destVincenty(latGPS, longGPS, i, dist));
+    pos=destVincenty(latGPS, longGPS, i, dist);
+    console.log(pos)
+    arrayVincenty.push((pos));
   }
   return arrayVincenty;
 }
+
+async function getGeo(pos) {
+  try {
+   let res =  await geocoder.geocodePosition(pos)
+   return(getDistrict(res[0].formattedAddress))
+
+  }catch (err) {
+    console.log(err);
+  }
+
+  
+}
+
 
 function destVincenty(lat, lon, brng, dist) {
   var a = 6378137,
