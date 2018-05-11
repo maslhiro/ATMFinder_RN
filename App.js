@@ -4,7 +4,7 @@ import {
   StyleSheet,
   Text,
   View, 
-  StatusBar
+ 
 } from 'react-native';
 console.disableYellowBox=true;
 //import Map from './src/Components/Map'
@@ -26,9 +26,7 @@ export default class App extends Component {
   render() {
     return (    
       <View style={styles.container}>
-        <StatusBar
-        backgroundColor = "#4f6d7a"
-        barStyle = "light-content"/>
+        
         <MapRE/>
       </View>
     );
@@ -38,7 +36,8 @@ export default class App extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#FFFFFF',
+   
   },
  
 });

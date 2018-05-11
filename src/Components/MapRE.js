@@ -18,7 +18,7 @@ import geolib from "geolib";
 import MapViewDirections from "react-native-maps-directions";
 import girl from "../../src/girl.png";
 import logo_vietcombank from "./../../src/logo-vietcombank.jpg"
-
+import searchIcon from "./../../src/search.png"
 const findIcon = <Icon name="search" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
 
@@ -594,12 +594,13 @@ render() {
             
             </MapView>
             <TouchableOpacity
-              activeOpacity={0.7}
+               activeOpacity={0.7}
               style={styles.mapButton}
               //onPress={()=>this.getATM()}
               onPress={()=>{this.showListATM()}}
             >
-              {findIcon}
+            <Image source={searchIcon} style={{width:50,height:50}}></Image>
+              {/* {findIcon} */}
             </TouchableOpacity>
           </View>
           <View style={styles.buttonContainer}>
