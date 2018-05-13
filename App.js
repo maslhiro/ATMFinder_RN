@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+
 import {
   Platform,
   StyleSheet,
@@ -16,9 +17,13 @@ console.disableYellowBox=true;
 //import MapGPS from './src/Components/MapGPS'
 import MapRE from './src/Components/MapRE'
 import SplashScreen from 'react-native-splash-screen'
-
 export default class App extends Component {
+  constructor(props){
+    super(props)
 
+  }
+
+  
   componentDidMount() {
     SplashScreen.hide();
   }
@@ -26,8 +31,7 @@ export default class App extends Component {
   render() {
     return (    
       <View style={styles.container}>
-        
-        <MapRE/>
+     <MapRE/>
       </View>
     );
   }
@@ -37,7 +41,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-   
+
   },
  
 });
+

@@ -16,15 +16,20 @@ import firebase from "./FirebaseConfig";
 import Geocoder from "react-native-geocoder";
 import geolib from "geolib";
 import MapViewDirections from "react-native-maps-directions";
+
+import imageGps from "../../src/gps.png";
 import girl from "../../src/girl.png";
 import logo_vietcombank from "./../../src/logo-vietcombank.jpg"
 import searchIcon from "./../../src/search.png"
+
 const findIcon = <Icon name="search" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
 
-const titleHeader = "호앙 난";
-const colorButtonDrawer="#E9FAE3"
-const colorTextButtonDrawer="#00000"
+const titleHeader_findMode01 = "FIND BY LOCATION";
+const titleHeader_findMode02 = "FIND AROUND";
+const colorButtonDrawer="rgba(233, 250, 227, 1)"
+const colorTextButtonDrawer="rgba(0, 0, 0, 1)"
+var MAX_DISTANCE=3000;
 
 class MapRE extends Component {
   constructor(props) {
@@ -39,8 +44,8 @@ class MapRE extends Component {
       region: {
         latitude: 10.8702117,
         longitude: 106.8037364,
-        latitudeDelta: 0.0222,
-        longitudeDelta: 0.0221
+        latitudeDelta: 0.1492546745746388,
+        longitudeDelta:  0.1003880426287509
       },
       gps: {
         latitude: 10,
@@ -48,7 +53,9 @@ class MapRE extends Component {
       },
       arrayBank:["VietComBank","VietTinBank"],
       arrayDistrict:[],
-      // findNext_MODE:false,
+      find_MODE:-1,   
+      // = 1 => Find by Locations
+      // = 0 => Find around Locations
       distance:"",
       arrayVincenty:[],
       currentMarker:[],
@@ -58,6 +65,9 @@ class MapRE extends Component {
       getAdress:false,
       getATM: false,
       getGPS: true,
+
+      switchValue: true,
+      distanceValue: 90,
     };
    
   }
@@ -76,8 +86,8 @@ class MapRE extends Component {
             region: {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01
+              latitudeDelta: 0.011,
+              longitudeDelta: 0.07
             },
             gps: {
               latitude: position.coords.latitude,
@@ -112,7 +122,8 @@ class MapRE extends Component {
       nextState.getGPS === true ||
       nextState.shouldRenderListMarker === true ||
       nextState.getATM === true||
-      nextState.renderDirection === true
+      nextState.renderDirection === true||
+      nextState.find_MODE!==-1
     ) {
       return true;
     }
@@ -141,8 +152,15 @@ class MapRE extends Component {
 
     // Get Marker Close to Current Pos
     if (nextState.getATM === true) {
+      this.getGeoArr(nextState)
       this.getDataWithKey(nextState);
     }
+
+    
+    if (nextState.find_MODE!==0 ) {
+      
+    }
+
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -320,6 +338,30 @@ class MapRE extends Component {
     this.refs["DRAWER_REF"].closeDrawer();
   }
 
+  findAroundMe_MODE(){
+    this.closeDrawer()
+    this.setState({
+      find_MODE:0, //findAroundMe_MODE
+      shouldRenderListMarker: false,
+      renderDirection: false,
+      getAdress:false,
+      getATM: false,
+      getGPS: false,
+    })
+  }
+
+  findLocation_MODE(){
+    this.closeDrawer()
+    this.setState({
+      find_MODE:1, //findAroundMe_MODE
+      shouldRenderListMarker: false,
+      renderDirection: false,
+      getAdress:false,
+      getATM: false,
+      getGPS: false,
+    })
+  }
+
   addDistance(arrayMarker){
     temp =[];
    for(marker of arrayMarker){
@@ -435,7 +477,7 @@ class MapRE extends Component {
     return data;
   }
 
-  getArrayMarker(dataState){
+  getArrayMarker(dataState,distance=3000){
     var data = {
       key: "",
       address: "",
@@ -444,7 +486,7 @@ class MapRE extends Component {
       latitude: 20,
       longitude: 20
     }, final =[];
-    var MAX_DISTANCE=3000;
+    
     for (marker of dataState.markers) {
       data = {
         key: marker.key,
@@ -463,7 +505,7 @@ class MapRE extends Component {
           latitude: dataState.gps.latitude,
           longitude: dataState.gps.longitude
         }
-      )<=MAX_DISTANCE)
+      )<=distance)
       {
         final.push(data)
       }
@@ -524,27 +566,36 @@ async  getGeoArr(dataState) {
    
 render() {
   console.log("Vincenty")
-  console.log(this.state.arrayVincenty)
+  console.log(this.state.region)
   //  console.log("District")
   //  console.log(this.state.arrayDistrict)
-  console.log("Marker")
-  console.log(this.state.markers)
+  //  console.log("Marker")
+  //  console.log(this.state.markers)
   
     var navigationView = (
       <View style={{ flex: 1, backgroundColor: "#fff", justifyContent:"center"}}>
-         <View style={{flex:1,alignItems:"center",padding:20}}>
+         <View style={{alignItems:"center",padding:20}}>
           <Image
             style={{width: 80, height: 80}}
-            source={girl}    ></Image>
+            source={girl}></Image>
 
         </View>
-        <View style={{ flex: 4, backgroundColor: "#fff", justifyConten: "center" }}>
+        <View style={{ flex: 4, backgroundColor: "#fff" }}>
+        <View style={{alignItems:"center",padding:20}}>
+          <Text style = {
+            {
+              alignItems: "center",
+              justifyContent: "center"
+            }
+          } > CHANCE MODE </Text>
+        </View>
+        <View style={{alignItems:"center"}}>
           <Button
             raised
             icon={{ name: 'cached' ,color:{colorTextButtonDrawer}}}
             color={colorTextButtonDrawer}
-            title='BUTTON WITH ICON'
-            onPress={()=>this.showListATM()}
+            title='Search By Location'
+            onPress={()=>this.findLocation_MODE()}
             buttonStyle={{
               backgroundColor: colorButtonDrawer,
               borderColor: "transparent",
@@ -555,17 +606,41 @@ render() {
           <Button
             raised
             icon={{ name: 'healing',color:{colorTextButtonDrawer} }}
-            title='BUTTON WITH ICON'
+            title='Search Around Me '
             color={colorTextButtonDrawer}
-            onPress={()=>this.closeDrawer()}
+            onPress={()=>this.findAroundMe_MODE()}
             buttonStyle={{
               backgroundColor: colorButtonDrawer,
               borderColor: "transparent",
               borderWidth: 0,
               borderRadius: 10
             }} />
-        </View>      
-        
+            
+        </View>   
+        <View style={{alignItems:"center",padding:20}}>
+          <Text style = {
+            {
+              alignItems: "center",
+              justifyContent: "center"
+            }
+          } > ABOUT </Text>
+        </View>  
+        <View style={{alignItems:"center"}}>
+          <Button
+            raised
+            icon={{ name: 'cached' ,color:{colorTextButtonDrawer}}}
+            color={colorTextButtonDrawer}
+            title='Infomation'
+          
+            buttonStyle={{
+              backgroundColor: colorButtonDrawer,
+              borderColor: "transparent",
+              borderWidth: 0,
+              borderRadius: 10
+            }} />
+             
+        </View>    
+        </View>
       </View>
     );
     return (
@@ -580,7 +655,7 @@ render() {
             <MapView
               provider="google"
               style={styles.map}
-              showsUserLocation={true}
+              //showsUserLocation={true}
               showsMyLocationButton={true}
               region={this.state.region}
               // mapType="terrain"
@@ -588,36 +663,50 @@ render() {
               ref={c => this.mapView = c}
               onRegionChangeComplete={e => this.setState({ region: e })}
             >
-             
+            <Marker coordinate={  {
+                  latitude: this.state.gps.latitude,
+                  longitude: this.state.gps.longitude
+                }}>
+               <Image
+                 style={{width: 24, height: 24}}
+                 source={imageGps}></Image>
+                </Marker>
+                
+             < Circle center = {
+                {
+                  latitude: this.state.find_MODE===0?this.state.gps.latitude:20,
+                  longitude:  this.state.find_MODE===0?this.state.gps.longitude:20
+                }
+              }
+              radius = {
+                MAX_DISTANCE
+              }
+              strokeColor="rgba(231, 226, 255, 0.5)"
+              fillColor = "rgba(231, 226, 255, 0.5)" / >
               {this.renderListMarker()}
               {this.renderDirection()}
-            
+              {this.renderMarkerCloseToPos()}
             </MapView>
             <TouchableOpacity
                activeOpacity={0.7}
               style={styles.mapButton}
               //onPress={()=>this.getATM()}
-              onPress={()=>{this.showListATM()}}
+              onPress={()=>{this.state.find_MODE===0?this.showListATM():this.getATM()}}
             >
             <Image source={searchIcon} style={{width:50,height:50}}></Image>
               {/* {findIcon} */}
             </TouchableOpacity>
-          </View>
+          {/* </View>
+          
           <View style={styles.buttonContainer}>
-            {/* <Button
-              // loadingProps={{ size: "large", color: "rgba(111, 202, 186, 1)" }}
-              //icon={{ name: "search", type: "font-awesome" }}
-              title = {
-                this.state.getATM ? "Distance: " + this.getDistance(this.getMarkerCloseToCurrentPos(this.state)) + " m" : "Distance: 0 m"
-              }
-              buttonStyle={{
-                backgroundColor: "#333",
-                borderColor: "transparent",
-                borderWidth: 0,
-                borderRadius: 10
-              }}
-              // onPress={this.getATM.bind(this)}
-            /> */}
+          <View style={{width:100,height:50, alignItems: 'stretch', justifyContent: 'flex-end', backgroundColor: "transparent"}}>
+          <Slider
+          trackStyle={customStylesSlider.track}
+          thumbStyle={customStylesSlider.thumb}
+          minimumTrackTintColor='#30a935'
+          />
+          <Text>Value: {this.state.distanceValue}</Text>
+          </View> */}
           </View>
         </View>
 
@@ -625,11 +714,18 @@ render() {
           placement="left"
           leftComponent={{
             icon: "menu",
-            color: "#fff",
+            color: "rgba(255, 255, 255, 1)",
             onPress: () => this.openDrawer()
           }}
-          centerComponent={{ text: titleHeader, style: { color: "#fff" } }}
-          backgroundColor={"#333333"}
+          centerComponent = {
+            {
+              text: this.state.find_MODE!==0?titleHeader_findMode01:titleHeader_findMode02,
+              style: {
+                color: "#fff"
+              }
+            }
+          }
+          backgroundColor={"rgba(51, 51, 51, 1)"}
         />
       </DrawerLayoutAndroid>
     );
@@ -666,7 +762,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "flex-end",
 
-    alignItems: "center",
+    alignItems: "stretch",
     marginVertical: 30,
     backgroundColor: "transparent"
   },
@@ -695,6 +791,21 @@ const styles = StyleSheet.create({
     
   },
 
+});
+
+var customStylesSlider = StyleSheet.create({
+  track: {
+    height: 4,
+    borderRadius: 2,
+  },
+  thumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 20 / 2,
+    backgroundColor: 'white',
+    borderColor: '#30a935',
+    borderWidth: 1,
+  }
 });
 
 function formatVietnamese(str) {

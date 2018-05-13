@@ -11,32 +11,18 @@
   - react-native-maps-directions : https://github.com/bramus/react-native-maps-directions
   - fire-base ( NOT REACT_NATIVE_FIREBASE ) : https://medium.com/@jamesmarino/getting-started-with-react-native-and-firebase-ab1f396db549
   - react native splash screen: https://medium.com/handlebar-labs/how-to-add-a-splash-screen-to-a-react-native-app-ios-and-android-30a3cec835ae 
-
+  - react-native-slider:
+  https://github.com/jeanregisser/react-native-slider
+  - react-native-popup-dialog:
+  https://github.com/jacklam718/react-native-popup-dialog
+  - react-native-exception-handler: https://github.com/master-atul/react-native-exception-handler 
+  - bugsnag-react-native :
+  https://github.com/bugsnag/bugsnag-react-native
 <img width="933" alt="ui" src="https://user-images.githubusercontent.com/26876671/38883831-360c3488-4298-11e8-8941-d89ae3510339.png">
 
 ## Demo 
 
-- Update UI: 
-<img width="275" alt="distance" src="https://user-images.githubusercontent.com/26876671/39348037-acac7c68-4a1f-11e8-9ab6-9718e0621403.png">
+### Find Around Mode
 
-
-- Custom Marker 
-
-![giphy](https://user-images.githubusercontent.com/26876671/39203319-933cad78-481e-11e8-8c8f-03aa1fb88838.gif)
-
-
-- Get GPS
-
-![gps](https://user-images.githubusercontent.com/26876671/39009023-a81a639a-4434-11e8-80bd-ffd983ac1b88.gif)
-- Render List Marker
-
-![renderatm](https://user-images.githubusercontent.com/26876671/39009028-aac1e730-4434-11e8-99a3-97e96dee9a76.gif)
-
-- DrawerLayoutAndroid 
-
-![drawer](https://user-images.githubusercontent.com/26876671/39009035-ad84a7c8-4434-11e8-9a7c-15d57dee8875.gif)
-
-- React Native Maps Directions
-
-<img width="272" alt="capture" src="https://user-images.githubusercontent.com/26876671/39082239-ffc248ec-4579-11e8-99ab-bc5b10434149.PNG">
+![giphy](https://user-images.githubusercontent.com/26876671/39966261-f65be46a-56d2-11e8-9106-2057745e30dc.gif)
 
