@@ -9,8 +9,17 @@ import {
   TouchableOpacity,
   DrawerLayoutAndroid
 } from "react-native";
+
+import PopupDialog, {
+  DialogTitle,
+  DialogButton,
+  SlideAnimation,
+  ScaleAnimation,
+  FadeAnimation,
+} from 'react-native-popup-dialog';
+
 import MapView, { Marker, Callout, Circle } from "react-native-maps";
-import { Header, Button, colors } from "react-native-elements";
+import { Header, Button, Colors,Slider } from "react-native-elements";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import firebase from "./FirebaseConfig";
 import Geocoder from "react-native-geocoder";
@@ -19,8 +28,8 @@ import MapViewDirections from "react-native-maps-directions";
 
 import imageGps from "../../src/gps.png";
 import girl from "../../src/girl.png";
-import logo_vietcombank from "./../../src/logo-vietcombank.jpg"
 import searchIcon from "./../../src/search.png"
+import markerVietcombank from "./../../src/ic_markervietcom.png"
 
 const findIcon = <Icon name="search" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
@@ -65,9 +74,8 @@ class MapRE extends Component {
       getAdress:false,
       getATM: false,
       getGPS: true,
-
-      switchValue: true,
-      distanceValue: 90,
+    
+      distanceValue: 3,
     };
    
   }
@@ -200,7 +208,11 @@ class MapRE extends Component {
           title={marker.key}
           onCalloutPress={() => this.markerClick(marker)}
           description={marker.address}
-        />
+        >
+        {/* <Image
+                style={{width: 40, height: 40}}
+                 source={markerVietcombank}></Image>      */}
+        </Marker>
       )));
     }
     console.log("Empty Array Marker");
@@ -306,12 +318,45 @@ class MapRE extends Component {
     );
   }
 
+  renderSlider(){
+
+    if(this.state.find_MODE===0){
+    return(
+      <View style={styles.buttonContainer}>
+        <View style={{flex:1}}>
+          <Text></Text>
+        </View>
+        <View style={{flex:3, alignItems: 'stretch', justifyContent: 'center', backgroundColor: "transparent"}}>
+          <Slider
+            minimumValue={3}
+            maximumValue={7}
+            step={1}
+            value={3}
+            trackStyle={customStylesSlider.track}
+            thumbStyle={customStylesSlider.thumb}
+            minimumTrackTintColor='#30a935'
+            onValueChange={value=>this.setState({distanceValue:value})}
+          />
+         <Text>Value: {this.state.distanceValue}</Text>
+        </View>
+        <View style={{flex:2}}>
+          <Text></Text>
+        </View>
+      </View>
+    );
+  }
+  }
+
   showListATM() {
     this.setState({
       shouldRenderListMarker: true,
       getGPS: false,
       getATM: false
     });
+  }
+
+  showScaleAnimationDialog = () => {
+    this.scaleAnimationDialog.show();
   }
 
   getGPS() {
@@ -549,29 +594,25 @@ class MapRE extends Component {
   }));
   return distance>90000?0:distance}
 
-async  getGeoArr(dataState) {
-  Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
-  var annotations = []
- // var vincenty = getArrMarkerBound(this.state.gps.latitude, this.state.gps.longitude, 45, 5);
-  for (var l of dataState.arrayVincenty) {
+  async  getGeoArr(dataState) {
+    Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
+    var annotations = []
+    // var vincenty = getArrMarkerBound(this.state.gps.latitude, this.state.gps.longitude, 45, 5);
+    for (var l of dataState.arrayVincenty) {
     var r = await getGeo(l)
     if (r == null) continue; 
     annotations.push(r)
   
+    }
+    console.log("annotations")
+    console.log(annotations)
+    dataState.arrayDistrict=annotations 
   }
-  console.log("annotations")
-  console.log(annotations)
-  dataState.arrayDistrict=annotations 
-}
    
-render() {
-  console.log("Vincenty")
-  console.log(this.state.region)
-  //  console.log("District")
-  //  console.log(this.state.arrayDistrict)
-  //  console.log("Marker")
-  //  console.log(this.state.markers)
+  render() {
   
+    console.log(this.state.region)
+    
     var navigationView = (
       <View style={{ flex: 1, backgroundColor: "#fff", justifyContent:"center"}}>
          <View style={{alignItems:"center",padding:20}}>
@@ -631,7 +672,7 @@ render() {
             icon={{ name: 'cached' ,color:{colorTextButtonDrawer}}}
             color={colorTextButtonDrawer}
             title='Infomation'
-          
+            onPress={this.showScaleAnimationDialog}
             buttonStyle={{
               backgroundColor: colorButtonDrawer,
               borderColor: "transparent",
@@ -644,6 +685,7 @@ render() {
       </View>
     );
     return (
+      <View style={{ flex: 1 }}>
       <DrawerLayoutAndroid
         drawerWidth={240}
         ref={"DRAWER_REF"}
@@ -655,7 +697,7 @@ render() {
             <MapView
               provider="google"
               style={styles.map}
-              //showsUserLocation={true}
+              showsUserLocation={true}
               showsMyLocationButton={true}
               region={this.state.region}
               // mapType="terrain"
@@ -691,23 +733,14 @@ render() {
                activeOpacity={0.7}
               style={styles.mapButton}
               //onPress={()=>this.getATM()}
-              onPress={()=>{this.state.find_MODE===0?this.showListATM():this.getATM()}}
-            >
+              onPress={()=>{this.state.find_MODE===0?this.showListATM():this.getATM()}}>
             <Image source={searchIcon} style={{width:50,height:50}}></Image>
               {/* {findIcon} */}
             </TouchableOpacity>
-          {/* </View>
-          
-          <View style={styles.buttonContainer}>
-          <View style={{width:100,height:50, alignItems: 'stretch', justifyContent: 'flex-end', backgroundColor: "transparent"}}>
-          <Slider
-          trackStyle={customStylesSlider.track}
-          thumbStyle={customStylesSlider.thumb}
-          minimumTrackTintColor='#30a935'
-          />
-          <Text>Value: {this.state.distanceValue}</Text>
-          </View> */}
-          </View>
+           </View>
+                  
+            {this.renderSlider()}
+         
         </View>
 
         <Header
@@ -728,8 +761,10 @@ render() {
           backgroundColor={"rgba(51, 51, 51, 1)"}
         />
       </DrawerLayoutAndroid>
+      </View>
     );
   }
+
 }
 
 const styles = StyleSheet.create({
