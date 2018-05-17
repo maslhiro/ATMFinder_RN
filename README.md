@@ -11,8 +11,8 @@
   - react-native-maps-directions : https://github.com/bramus/react-native-maps-directions
   - fire-base ( NOT REACT_NATIVE_FIREBASE ) : https://medium.com/@jamesmarino/getting-started-with-react-native-and-firebase-ab1f396db549
   - react native splash screen: https://medium.com/handlebar-labs/how-to-add-a-splash-screen-to-a-react-native-app-ios-and-android-30a3cec835ae 
-  - react-native-slider:
-  https://github.com/jeanregisser/react-native-slider
+  - react-native-offline-status:
+  https://github.com/rgabs/react-native-offline-status
   - react-native-popup-dialog:
   https://github.com/jacklam718/react-native-popup-dialog
   - react-native-exception-handler: https://github.com/master-atul/react-native-exception-handler 

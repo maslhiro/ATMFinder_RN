@@ -26,6 +26,7 @@ import firebase from "./FirebaseConfig";
 import Geocoder from "react-native-geocoder";
 import geolib from "geolib";
 import MapViewDirections from "react-native-maps-directions";
+import OfflineBar from 'react-native-offline-status'
 
 import imageGps from "../../src/gps.png";
 import girl from "../../src/girl.png";
@@ -48,6 +49,7 @@ const fadeAnimation = new FadeAnimation({ animationDuration: 150 });
 var MAX_DISTANCE=3000;
 
 class MapRE extends Component {
+ 
   constructor(props) {
     super(props);
     database = firebase.database();
@@ -704,6 +706,8 @@ class MapRE extends Component {
 
     return (
       <View style={{ flex: 1 }}>
+        <OfflineBar/>
+      <View style={{ flex: 1 }}>
         <DrawerLayoutAndroid
           drawerWidth={240}
           ref={"DRAWER_REF"}
@@ -799,6 +803,7 @@ class MapRE extends Component {
             
           </View>
         </PopupDialog>
+      </View>
       </View>
     );
   }
