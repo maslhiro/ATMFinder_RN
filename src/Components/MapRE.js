@@ -7,7 +7,8 @@ import {
   Dimensions,
   TouchableHightLight,
   TouchableOpacity,
-  DrawerLayoutAndroid
+  DrawerLayoutAndroid,
+  ImageBackground
 } from "react-native";
 
 import PopupDialog, {
@@ -30,6 +31,8 @@ import imageGps from "../../src/gps.png";
 import girl from "../../src/girl.png";
 import searchIcon from "./../../src/search.png"
 import markerVietcombank from "./../../src/ic_markervietcom.png"
+import background from "./../../src/background.jpg"
+
 
 const findIcon = <Icon name="search" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
@@ -38,6 +41,10 @@ const titleHeader_findMode01 = "FIND BY LOCATION";
 const titleHeader_findMode02 = "FIND AROUND";
 const colorButtonDrawer="rgba(233, 250, 227, 1)"
 const colorTextButtonDrawer="rgba(0, 0, 0, 1)"
+
+const slideAnimation = new SlideAnimation({ slideFrom: 'bottom' });
+const scaleAnimation = new ScaleAnimation();
+const fadeAnimation = new FadeAnimation({ animationDuration: 150 });
 var MAX_DISTANCE=3000;
 
 class MapRE extends Component {
@@ -149,7 +156,7 @@ class MapRE extends Component {
     if (nextState.shouldRenderListMarker === true) {
       this.getGeoArr(nextState)
       this.getDataWithKey(nextState)
-      nextState.markers=this.getArrayMarker(nextState)
+      nextState.markers=this.getArrayMarker(nextState,this.state.distanceValue*1000)
       console.log(nextState.markers)
    //   this.getArrayMarker(nextState)
     }
@@ -182,8 +189,8 @@ class MapRE extends Component {
     );
     console.log("DID UPDATE: Get Gps " + prevState.getGPS);
     console.log("DID UPDATE: Get ATM " + prevState.getATM);
-  //  console.log("DID UPDATE: City " + prevState.address.city);
-  //  console.log("DID UPDATE: Address " + prevState.address.district);
+    //  console.log("DID UPDATE: City " + prevState.address.city);
+    //  console.log("DID UPDATE: Address " + prevState.address.district);
   }
 
   componentWillUnmount() {
@@ -319,32 +326,40 @@ class MapRE extends Component {
   }
 
   renderSlider(){
-
     if(this.state.find_MODE===0){
-    return(
-      <View style={styles.buttonContainer}>
-        <View style={{flex:1}}>
-          <Text></Text>
-        </View>
-        <View style={{flex:3, alignItems: 'stretch', justifyContent: 'center', backgroundColor: "transparent"}}>
+      return(
+        <View style={styles.buttonContainer}>
+          <View style={{flex:1}}>
+            <Text></Text>
+          </View>
+          <View style={{flex:3, alignItems: 'stretch', justifyContent: 'center', backgroundColor: "transparent"}}>
           <Slider
             minimumValue={3}
             maximumValue={7}
             step={1}
-            value={3}
+            value={this.state.distanceValue}
             trackStyle={customStylesSlider.track}
             thumbStyle={customStylesSlider.thumb}
             minimumTrackTintColor='#30a935'
             onValueChange={value=>this.setState({distanceValue:value})}
           />
-         <Text>Value: {this.state.distanceValue}</Text>
-        </View>
+
+         <Button
+              title={String("Radius: "+this.state.distanceValue+" Km")}
+              buttonStyle={{
+                backgroundColor: "#333",
+                borderColor: "transparent",
+                borderWidth: 0,
+                borderRadius: 10
+              }}
+          />
+          </View>
         <View style={{flex:2}}>
           <Text></Text>
         </View>
-      </View>
-    );
-  }
+        </View>
+        );
+    }
   }
 
   showListATM() {
@@ -392,6 +407,7 @@ class MapRE extends Component {
       getAdress:false,
       getATM: false,
       getGPS: false,
+      distanceValue:3
     })
   }
 
@@ -404,6 +420,7 @@ class MapRE extends Component {
       getAdress:false,
       getATM: false,
       getGPS: false,
+      distanceValue:3
     })
   }
 
@@ -584,15 +601,17 @@ class MapRE extends Component {
     dataState.markers =arrayMarker;
   }
 
+  // Get khoảng cách đường chim bay 
   getDistance(marker){
     var distance= (geolib.getDistance({
-    latitude: marker.latitude,
-    longitude: marker.longitude
-  }, {
-    latitude: this.state.gps.latitude,
-    longitude: this.state.gps.longitude
-  }));
-  return distance>90000?0:distance}
+      latitude: marker.latitude,
+      longitude: marker.longitude
+    }, {
+      latitude: this.state.gps.latitude,
+     longitude: this.state.gps.longitude
+    }));
+    return distance>90000?0:distance
+  }
 
   async  getGeoArr(dataState) {
     Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
@@ -611,8 +630,6 @@ class MapRE extends Component {
    
   render() {
   
-    console.log(this.state.region)
-    
     var navigationView = (
       <View style={{ flex: 1, backgroundColor: "#fff", justifyContent:"center"}}>
          <View style={{alignItems:"center",padding:20}}>
@@ -671,7 +688,7 @@ class MapRE extends Component {
             raised
             icon={{ name: 'cached' ,color:{colorTextButtonDrawer}}}
             color={colorTextButtonDrawer}
-            title='Infomation'
+            title='Version'
             onPress={this.showScaleAnimationDialog}
             buttonStyle={{
               backgroundColor: colorButtonDrawer,
@@ -684,83 +701,104 @@ class MapRE extends Component {
         </View>
       </View>
     );
+
     return (
       <View style={{ flex: 1 }}>
-      <DrawerLayoutAndroid
-        drawerWidth={240}
-        ref={"DRAWER_REF"}
-        drawerPosition={DrawerLayoutAndroid.positions.Left}
-        renderNavigationView={() => navigationView}
-      >
-        <View style={styles.container}>
-          <View style={styles.container01}>
-            <MapView
-              provider="google"
-              style={styles.map}
-              showsUserLocation={true}
-              showsMyLocationButton={true}
-              region={this.state.region}
-              // mapType="terrain"
-              showsBuildings={false}
-              ref={c => this.mapView = c}
-              onRegionChangeComplete={e => this.setState({ region: e })}
-            >
-            <Marker coordinate={  {
+        <DrawerLayoutAndroid
+          drawerWidth={240}
+          ref={"DRAWER_REF"}
+          drawerPosition={DrawerLayoutAndroid.positions.Left}
+          renderNavigationView={() => navigationView}>
+          <View style={styles.container}>
+            <View style={styles.container01}>
+              <MapView
+                provider="google"
+                style={styles.map}
+                showsUserLocation={true}
+                showsMyLocationButton={true}
+                region={this.state.region}
+                // mapType="terrain"
+                showsBuildings={false}
+                ref={c => this.mapView = c}
+                onRegionChangeComplete={e => this.setState({ region: e })}>
+                {/* Render marker tại gps */}
+                {/* <Marker coordinate={  {
                   latitude: this.state.gps.latitude,
                   longitude: this.state.gps.longitude
                 }}>
-               <Image
-                 style={{width: 24, height: 24}}
-                 source={imageGps}></Image>
-                </Marker>
+                  <Image
+                    style={{width: 24, height: 24}}
+                    source={imageGps}></Image>
+                </Marker> */}
                 
-             < Circle center = {
+                < Circle center = {
                 {
                   latitude: this.state.find_MODE===0?this.state.gps.latitude:20,
                   longitude:  this.state.find_MODE===0?this.state.gps.longitude:20
                 }
-              }
-              radius = {
-                MAX_DISTANCE
-              }
-              strokeColor="rgba(231, 226, 255, 0.5)"
-              fillColor = "rgba(231, 226, 255, 0.5)" / >
-              {this.renderListMarker()}
-              {this.renderDirection()}
-              {this.renderMarkerCloseToPos()}
-            </MapView>
-            <TouchableOpacity
-               activeOpacity={0.7}
-              style={styles.mapButton}
-              //onPress={()=>this.getATM()}
-              onPress={()=>{this.state.find_MODE===0?this.showListATM():this.getATM()}}>
-            <Image source={searchIcon} style={{width:50,height:50}}></Image>
-              {/* {findIcon} */}
-            </TouchableOpacity>
-           </View>
+                }
+                radius = {this.state.distanceValue*1000}
+                strokeColor="rgba(231, 226, 255, 0.5)"
+                fillColor = "rgba(231, 226, 255, 0.5)" / >
+                {this.renderListMarker()}
+                {this.renderDirection()}
+                {this.renderMarkerCloseToPos()}
+               </MapView>
+              
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={styles.mapButton}
+                //onPress={()=>this.getATM()}
+                onPress={()=>{this.state.find_MODE===0?this.showListATM():this.getATM()}}>
+                  <Image source={searchIcon} style={{width:50,height:50}}></Image>
+                  {/* {findIcon} */}
+               </TouchableOpacity>
+            </View>
                   
             {this.renderSlider()}
          
-        </View>
+           </View>
 
-        <Header
-          placement="left"
-          leftComponent={{
-            icon: "menu",
-            color: "rgba(255, 255, 255, 1)",
-            onPress: () => this.openDrawer()
-          }}
-          centerComponent = {
+          <Header
+            placement="left"
+            leftComponent={{
+              icon: "menu",
+              color: "rgba(255, 255, 255, 1)",
+              onPress: () => this.openDrawer()
+            }}
+            centerComponent = {
             {
               text: this.state.find_MODE!==0?titleHeader_findMode01:titleHeader_findMode02,
               style: {
                 color: "#fff"
               }
-            }
-          }
-          backgroundColor={"rgba(51, 51, 51, 1)"}
-        />
-      </DrawerLayoutAndroid>
+            }}
+            backgroundColor={"rgba(51, 51, 51, 1)"}/>
+        </DrawerLayoutAndroid>
+        <PopupDialog
+          ref={(popupDialog) => {
+            this.scaleAnimationDialog = popupDialog;
+          }}
+          height={400}
+          width={300}
+          dialogAnimation={scaleAnimation}
+          dialogTitle={<DialogTitle title="Popup Dialog - Scale Animation" />}
+          actions={[
+            <DialogButton
+              text="Close"
+              onPress={() => {
+                this.scaleAnimationDialog.dismiss();
+              }}
+             // key="button-1"
+            />,
+          ]}>
+          <View style={styles.dialogContentView}>
+            <ImageBackground source={background} style={{width:"100%" ,height:"100%"}}> 
+              <Text>Hiiiiiii</Text>
+            </ImageBackground> 
+            
+          </View>
+        </PopupDialog>
       </View>
     );
   }
@@ -824,6 +862,11 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     zIndex: 10
     
+  },
+  dialogContentView: {
+    flex:1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
 });
