@@ -4,7 +4,11 @@ import {
   Platform,
   StyleSheet,
   Text,
-  View, 
+  View,
+  Alert,
+  BackHandler,
+  StatusBar 
+
  
 } from 'react-native';
 console.disableYellowBox=true;
@@ -17,23 +21,67 @@ console.disableYellowBox=true;
 //import MapGPS from './src/Components/MapGPS'
 import MapRE from './src/Components/MapRE'
 import SplashScreen from 'react-native-splash-screen'
+import Permissions from 'react-native-permissions'
+
+
 export default class App extends Component {
   constructor(props){
     super(props)
-
+    this.state={
+      locationPermission:""
+    }
   }
 
   
   componentDidMount() {
-    SplashScreen.hide();
-  }
+    
+      SplashScreen.hide();
+      Permissions.check('location').then(response => {
+        // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
+        this.setState({ photoPermission: response })
+      })
+    }
+    
+    _requestPermission = () => {
+      Permissions.request('location').then(response => {
+        // Returns once the user has chosen to 'allow' or to 'not allow' access
+        // Response is one of: 'authorized', 'denied', 'restricted', or 'undetermined'
+        this.setState({ locationPermission: response })
+      })
+    }
 
   render() {
     return (    
       <View style={styles.container}>
-     <MapRE/>
+        <StatusBar
+          barStyle="light-content"
+          backgroundColor="#FFFFFF"
+        />
+   
+     
       </View>
     );
+  }
+
+  _alertForLocationsPermission() {
+    if(this.state.photoPermission!=="authorized")
+     return Alert(
+      'Can we access your location?',
+       [
+        {
+          text: 'No way',
+          onPress: () => BackHandler.exitApp(),
+          style: 'cancel',
+        },
+        this.state.photoPermission == 'undetermined'
+          ? { text: 'OK', onPress: this._requestPermission }
+          : { text: 'Open Settings', onPress: Permissions.openSettings },
+      ],
+    )
+  }
+
+  renderView(){
+    return this.state.photoPermission=="authorized"?  <MapRE/>:null
   }
 }
 
