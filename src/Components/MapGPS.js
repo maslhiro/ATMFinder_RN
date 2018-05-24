@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity,Image } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-
+import markerVietcombank from "./../../src/ic_markervietcom.png"
 import Geocoder from "react-native-geocoder";
 
 export default class MapGPS extends Component {
@@ -97,7 +97,12 @@ export default class MapGPS extends Component {
             region={this.state.region}
             onRegionChangeComplete={this.onRegionChangeComplete}
           >
-            <Marker coordinate={this.state.maker} />
+            <Marker coordinate={this.state.maker} image={markerVietcombank}>
+            {/* <Image
+                    // style={{width: 24, height: 24}}
+                    source={markerVietcombank}></Image> */}
+            </Marker>
+
           </MapView>
           <View style={styles.buttonContainer}>
             <View style={styles.bubble}>

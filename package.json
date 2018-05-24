@@ -7,11 +7,13 @@
     "test": "jest"
   },
   "dependencies": {
+    "bugsnag-react-native": "^2.9.4",
     "firebase": "^4.12.1",
     "geolib": "^2.0.24",
     "react": "16.3.0-alpha.1",
     "react-native": "0.54.0-rc.4",
     "react-native-elements": "^0.19.1",
+    "react-native-exception-handler": "^2.7.5",
     "react-native-geocoder": "^0.5.0",
     "react-native-maps": "0.20.1",
     "react-native-maps-directions": "^1.6.0",

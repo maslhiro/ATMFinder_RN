@@ -1,9 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.demoapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
       android:name=".MainApplication"
@@ -14,7 +15,8 @@
        <meta-data
       android:name="com.google.android.geo.API_KEY"
       android:value="AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8"/>
-
+      <meta-data android:name="com.bugsnag.android.API_KEY"
+      android:value="8fa914dce612bff1af78ec474610a5de"/>
         <activity
             android:name=".SplashActivity"
             android:theme="@style/SplashTheme"

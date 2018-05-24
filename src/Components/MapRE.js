@@ -34,7 +34,6 @@ import searchIcon from "./../../src/search.png"
 import markerVietcombank from "./../../src/ic_markervietcom.png"
 import background from "./../../src/background.jpg"
 
-
 const findIcon = <Icon name="search" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
 
@@ -46,7 +45,6 @@ const colorTextButtonDrawer="rgba(0, 0, 0, 1)"
 const slideAnimation = new SlideAnimation({ slideFrom: 'bottom' });
 const scaleAnimation = new ScaleAnimation();
 const fadeAnimation = new FadeAnimation({ animationDuration: 150 });
-var MAX_DISTANCE=3000;
 
 class MapRE extends Component {
  
@@ -69,7 +67,7 @@ class MapRE extends Component {
         latitude: 10,
         longitude: 106
       },
-      arrayBank:["VietComBank","VietTinBank"],
+      arrayBank:["VietComBank","VietTinBank","AChauBank","AgriBank","BIDVBank","DongABank"],
       arrayDistrict:[],
       find_MODE:-1,   
       // = 1 => Find by Locations
@@ -97,10 +95,8 @@ class MapRE extends Component {
     console.log("Did mount");
     this.watchId = navigator.geolocation.watchPosition(
         position => {
-
           this.setState({
-
-            region: {
+           region: {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude,
               latitudeDelta: 0.011,
@@ -631,7 +627,7 @@ class MapRE extends Component {
   }
    
   render() {
-  
+    console.log("RENDER :"+this.state.region)
     var navigationView = (
       <View style={{ flex: 1, backgroundColor: "#fff", justifyContent:"center"}}>
          <View style={{alignItems:"center",padding:20}}>
@@ -706,7 +702,7 @@ class MapRE extends Component {
 
     return (
       <View style={{ flex: 1 }}>
-        <OfflineBar/>
+      <OfflineBar/>
       <View style={{ flex: 1 }}>
         <DrawerLayoutAndroid
           drawerWidth={240}
@@ -786,19 +782,25 @@ class MapRE extends Component {
           height={400}
           width={300}
           dialogAnimation={scaleAnimation}
-          dialogTitle={<DialogTitle title="Popup Dialog - Scale Animation" />}
+          dialogTitle={<DialogTitle title="ATM Finder App" />}
           actions={[
             <DialogButton
               text="Close"
               onPress={() => {
                 this.scaleAnimationDialog.dismiss();
               }}
-             // key="button-1"
+             
             />,
           ]}>
           <View style={styles.dialogContentView}>
             <ImageBackground source={background} style={{width:"100%" ,height:"100%"}}> 
-              <Text>Hiiiiiii</Text>
+            <View style={{flex:1,alignItems:"center",justifyContent:"center"}}>
+               <Text style={{fontFamily:"Roboto",fontSize:20,color:"#FFFFFF"}}>ATM Finder - Help find an ATM near you </Text>
+               <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Can we access your location? :( </Text>
+               <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Please check your permissions</Text> 
+               <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}> in your devive setting.</Text>
+               <Text></Text>
+            </View>
             </ImageBackground> 
             
           </View>
