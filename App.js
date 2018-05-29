@@ -24,7 +24,7 @@ import SplashScreen from 'react-native-splash-screen'
 import Permissions from 'react-native-permissions'
 import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 
-import background from "./src/background.jpg"
+import background from "./src/assets/background.jpg"
 
 import { Client } from 'bugsnag-react-native';
 import { Button } from 'react-native-elements';
@@ -55,11 +55,12 @@ const errorHandler = (e, isFatal) => {
   }
 };
 
-setJSExceptionHandler(errorHandler, true);
+// setJSExceptionHandler(errorHandler, true);
 
-setNativeExceptionHandler(errorHandler,true);
+// setNativeExceptionHandler(errorHandler,true);
 
 export default class App extends Component {
+ 
   constructor(props){
     super(props)
     this.state={
@@ -71,15 +72,19 @@ export default class App extends Component {
     throw new Error('THIS IS A CUSTOM UNHANDLED JS ERROR');
   }
 
+  componentWillMount(){
+    Permissions.check('location').then( response => {
+      console.log('Splash check location: ', response);
+     if (response !== 'authorized') this._requestPermission()
+     else
+    this.setState({ locationPermission: String(response) })
+    })
+  }
+
   componentDidMount() {
       //  bugsnag.notify(new Error("Test error"));
       SplashScreen.hide();
-      Permissions.check('location').then( response => {
-        console.log('Splash check location: ', response);
-       if (response !== 'authorized') this._requestPermission()
-       else
-      this.setState({ locationPermission: String(response) })
-      })
+    
   }
     
   renderView(){
@@ -120,7 +125,9 @@ export default class App extends Component {
           barStyle="light-content"
           backgroundColor="#333333"
         />
-       {this.state.locationPermission==="authorized"?<MapRE/>:this.renderView()}
+       {this.state.locationPermission!=="authorized"?
+       this.state.locationPermission===""?
+       null:this.renderView():<MapRE/>}
            
      
       </View>

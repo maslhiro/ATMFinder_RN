@@ -28,11 +28,17 @@ import geolib from "geolib";
 import MapViewDirections from "react-native-maps-directions";
 import OfflineBar from 'react-native-offline-status'
 
-import imageGps from "../../src/gps.png";
-import girl from "../../src/girl.png";
-import searchIcon from "./../../src/search.png"
-import markerVietcombank from "./../../src/ic_markervietcom.png"
-import background from "./../../src/background.jpg"
+import girl from "../../src/assets/ic_girl.png";
+import searchIcon from "./../../src/assets/ic_search.png"
+import markerVietcombank from "./../../src/assets/ic_markerVietCom.png"
+import markerViettinbank from "./../../src/assets/ic_markerVietTin.png"
+import markerDongabank from "./../../src/assets/ic_markerDongA.png"
+import markerAgribank from "./../../src/assets/ic_markerAgri.png"
+import markerAchaubank from "./../../src/assets/ic_markerACB.png"
+import markerBidvbank from "./../../src/assets/ic_markerBidv.png"
+
+
+import background from "./../../src/assets/background.jpg"
 
 const findIcon = <Icon name="search" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
@@ -84,7 +90,6 @@ class MapRE extends Component {
     
       distanceValue: 3,
     };
-   
   }
 
   componentWillMount() {
@@ -209,10 +214,11 @@ class MapRE extends Component {
           coordinate={{
             latitude: parseFloat(marker.latitude),
             longitude: parseFloat(marker.longitude)
-          }}
+          }} 
+          image={this.renderCustomMarker(marker.key)}
           title={marker.key}
           onCalloutPress={() => this.markerClick(marker)}
-          description={marker.address}
+          description={marker.address+"\n Amount: "+marker.amount}
         >
         {/* <Image
                 style={{width: 40, height: 40}}
@@ -258,15 +264,17 @@ class MapRE extends Component {
       latitude: dataMarker.latitude ? dataMarker.latitude : 20,
       longitude: dataMarker.longitude ? dataMarker.longitude : 20
     };
-    var address = String(marker.address)
+    var key = String(marker.key)
+    var description = String(marker.address+"\n Amout:"+marker.amount)
     return (
+      
       <View>
         <Marker
           key={marker.address}
           title={marker.key}
-          description={address}
-        
+          description={description}
           pinColor={String(color)}
+          image={this.renderCustomMarker(key)}
           coordinate={{
             latitude: parseFloat(marker.latitude),
             longitude: parseFloat(marker.longitude)
@@ -323,6 +331,27 @@ class MapRE extends Component {
     );
   }
 
+  renderCustomMarker(key){
+    if (key==="") return null;
+    switch(checkDescription(key)){
+      case 1:
+      return markerVietcombank
+      case 2:
+      return markerViettinbank;
+      case 3:
+      return markerAchaubank
+      case 4:
+      return markerDongabank
+      case 5:
+      return markerBidvbank
+      case 6:
+      return markerAgribank
+      default: 
+      return null;
+   
+    }
+  }
+   
   renderSlider(){
     if(this.state.find_MODE===0){
       return(
@@ -627,7 +656,7 @@ class MapRE extends Component {
   }
    
   render() {
-    console.log("RENDER :"+this.state.region)
+    // console.log("RENDER :"+this.state.region)
     var navigationView = (
       <View style={{ flex: 1, backgroundColor: "#fff", justifyContent:"center"}}>
          <View style={{alignItems:"center",padding:20}}>
@@ -702,7 +731,7 @@ class MapRE extends Component {
 
     return (
       <View style={{ flex: 1 }}>
-      <OfflineBar/>
+      <OfflineBar offlineText="Sorry!We cant connect to Internet"/>
       <View style={{ flex: 1 }}>
         <DrawerLayoutAndroid
           drawerWidth={240}
@@ -1014,6 +1043,36 @@ function getArrMarkerBound(latGPS, longGPS,radian, dist) {
     arrayVincenty.push((pos));
   }
   return arrayVincenty;
+}
+
+{/* // Kiem tra marker atm nao ?
+// 1 - VietComBank
+// 2 - VietTinBank
+// 3 - AChauBank
+// 4 - DongABank
+// 5 - BIDVBank
+// 6 - AgriBank */}
+function checkDescription(key){
+ temp = String(key);
+ des = formatVietnamese(temp);
+ des=des.slice(0,des.indexOf("Bank")+4);
+ switch(des){
+   case "VietComBank":
+   return 1;
+   case "VietTinBank":
+   return 2;
+   case "AChauBank":
+   return 3;
+   case "DongABank":
+   return 4;
+   case "BIDVBank":
+   return 5;
+   case "AgriBank":
+   return 6;
+   default: 
+   return 0;
+
+ }
 }
 
 export default MapRE;
