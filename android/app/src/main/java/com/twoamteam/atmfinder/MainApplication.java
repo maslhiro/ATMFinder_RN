@@ -1,5 +1,4 @@
-package com.demoapp;
-
+package com.twoamteam.atmfinder;
 import android.app.Application;
 import com.devfd.RNGeocoder.RNGeocoderPackage;
 import com.facebook.react.ReactApplication;

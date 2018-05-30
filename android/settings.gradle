@@ -1,4 +1,4 @@
-rootProject.name = 'DemoApp'
+rootProject.name = 'AtmFinderApp'
 
 include ':app'
 

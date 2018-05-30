@@ -26,9 +26,9 @@ import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-e
 
 import background from "./src/assets/background.jpg"
 
-import { Client } from 'bugsnag-react-native';
+//import { Client } from 'bugsnag-react-native';
 import { Button } from 'react-native-elements';
-const bugsnag = new Client();
+//const bugsnag = new Client();
 
 const reporter = (error) => {
   // Logic for reporting to devs
