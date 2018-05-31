@@ -26,9 +26,9 @@ import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-e
 
 import background from "./src/assets/background.jpg"
 
-//import { Client } from 'bugsnag-react-native';
+import { Client } from 'bugsnag-react-native';
 import { Button } from 'react-native-elements';
-//const bugsnag = new Client();
+const bugsnag = new Client();
 
 const reporter = (error) => {
   // Logic for reporting to devs
@@ -55,15 +55,15 @@ const errorHandler = (e, isFatal) => {
   }
 };
 
-// setJSExceptionHandler(errorHandler, true);
+setJSExceptionHandler(errorHandler, false);
 
-// setNativeExceptionHandler(errorHandler,true);
+setNativeExceptionHandler(errorHandler,false);
 
 export default class App extends Component {
  
   constructor(props){
     super(props)
-    this.state={
+    this.state={  
       locationPermission:""
     }
   }

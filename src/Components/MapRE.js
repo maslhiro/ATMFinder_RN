@@ -37,7 +37,6 @@ import markerAgribank from "./../../src/assets/ic_markerAgri.png"
 import markerAchaubank from "./../../src/assets/ic_markerACB.png"
 import markerBidvbank from "./../../src/assets/ic_markerBidv.png"
 
-
 import background from "./../../src/assets/background.jpg"
 
 const findIcon = <Icon name="search" size={30} color="#333" />;
@@ -87,9 +86,9 @@ class MapRE extends Component {
       getAdress:false,
       getATM: false,
       getGPS: true,
-    
       distanceValue: 3,
     };
+   
   }
 
   componentWillMount() {
@@ -98,6 +97,7 @@ class MapRE extends Component {
 
   componentDidMount() {
     console.log("Did mount");
+    this.scaleAnimationDialogMess.show();
     this.watchId = navigator.geolocation.watchPosition(
         position => {
           this.setState({
@@ -113,13 +113,13 @@ class MapRE extends Component {
             },
             arrayVincenty: getArrMarkerBound(position.coords.latitude,position.coords.longitude,45,5),
             //  arrayDistrict:this.getGeoArr()
-            
+           
             });
       
       },
       error => console.log(error),
       {
-        enableHighAcuracy: true,
+        enableHighAcuracy: false,
         timeout: 30000,
         maximumAge: 1000,
         distanceFilter: 1
@@ -361,9 +361,9 @@ class MapRE extends Component {
           </View>
           <View style={{flex:3, alignItems: 'stretch', justifyContent: 'center', backgroundColor: "transparent"}}>
           <Slider
-            minimumValue={3}
-            maximumValue={7}
-            step={1}
+            minimumValue={0}
+            maximumValue={3}
+            step={0.5}
             value={this.state.distanceValue}
             trackStyle={customStylesSlider.track}
             thumbStyle={customStylesSlider.thumb}
@@ -372,7 +372,7 @@ class MapRE extends Component {
           />
 
          <Button
-              title={String("Radius: "+this.state.distanceValue+" Km")}
+              title={String("Radius: "+this.state.distanceValue * 1000+" m")}
               buttonStyle={{
                 backgroundColor: "#333",
                 borderColor: "transparent",
@@ -389,6 +389,81 @@ class MapRE extends Component {
     }
   }
 
+  renderViewInfo(){
+    return(
+      <PopupDialog
+      ref={(popupDialog) => {
+        this.scaleAnimationDialog = popupDialog;
+      }}
+      height={400}
+      width={300}
+      dialogAnimation={scaleAnimation}
+      dialogTitle={<DialogTitle title="ATM Finder App" />}
+      actions={[
+        <DialogButton
+          text="Close"
+          onPress={() => {
+            this.scaleAnimationDialog.dismiss();
+          }}
+         
+        />,
+      ]}>
+      <View style={styles.dialogContentView}>
+        <ImageBackground source={background} style={{width:"100%" ,height:"100%"}}> 
+        <View style={{flex:1,alignItems:"center",justifyContent:"center"}}>
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Version 0.0.1 </Text> 
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Help find an ATM near you </Text>
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Contact 2amteam.uit@gmail.com  </Text> 
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>for more infomation.  </Text>
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Thanks for reading:) </Text>
+           <Text></Text>
+        </View>
+        </ImageBackground> 
+        
+      </View>
+    </PopupDialog>
+    )
+  }
+
+  renderViewMess(){
+    return(
+      <PopupDialog
+      ref={(popupDialog) => {
+        this.scaleAnimationDialogMess = popupDialog;
+      }}
+      height={400}
+      width={300}
+      dialogAnimation={scaleAnimation}
+      dialogTitle={<DialogTitle title="ATM Finder App" />}
+      actions={[
+        <DialogButton
+          text="Close"
+          onPress={() => {
+            this.scaleAnimationDialogMess.dismiss();
+          }}
+         
+        />,
+      ]}>
+      <View style={styles.dialogContentView}>
+        <ImageBackground source={background} style={{width:"100%" ,height:"100%"}}> 
+           <View style={{flex:1,alignItems:"center",justifyContent:"center"}}>
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Sorry, This app only use for the ATM</Text>
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>on District 9 and Thu Duc District </Text> 
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Ho Chi Minh City.  </Text> 
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>We will update the database</Text>
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>for other districts soon.</Text>
+
+           <Text></Text>
+        </View>
+        </ImageBackground> 
+        
+      </View>
+    </PopupDialog>
+   
+    )
+  }
+
+
   showListATM() {
     this.setState({
       shouldRenderListMarker: true,
@@ -401,6 +476,13 @@ class MapRE extends Component {
     this.scaleAnimationDialog.show();
   }
 
+ showScaleAnimationDialogMess= () => {
+  
+    this.scaleAnimationDialogMess.show();
+  }
+
+
+  
   getGPS() {
     this.setState({
       shouldRenderListMarker: false,
@@ -619,7 +701,7 @@ class MapRE extends Component {
             });
           });
         }),
-        { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 };
+        { enableHighAcuracy: false, timeout: 20000, maximumAge: 1000 };
       })
      
     })
@@ -677,7 +759,7 @@ class MapRE extends Component {
         <View style={{alignItems:"center"}}>
           <Button
             raised
-            icon={{ name: 'cached' ,color:{colorTextButtonDrawer}}}
+            icon={{ name: 'search' ,color:{colorTextButtonDrawer}}}
             color={colorTextButtonDrawer}
             title='Search By Location'
             onPress={()=>this.findLocation_MODE()}
@@ -713,7 +795,7 @@ class MapRE extends Component {
         <View style={{alignItems:"center"}}>
           <Button
             raised
-            icon={{ name: 'cached' ,color:{colorTextButtonDrawer}}}
+            icon={{ name: 'info' ,color:{colorTextButtonDrawer}}}
             color={colorTextButtonDrawer}
             title='Version'
             onPress={this.showScaleAnimationDialog}
@@ -731,7 +813,7 @@ class MapRE extends Component {
 
     return (
       <View style={{ flex: 1 }}>
-      <OfflineBar offlineText="Sorry!We cant connect to Internet"/>
+      <OfflineBar offlineText="Oops! We cant connect to Internet"/>
       <View style={{ flex: 1 }}>
         <DrawerLayoutAndroid
           drawerWidth={240}
@@ -769,6 +851,7 @@ class MapRE extends Component {
                 radius = {this.state.distanceValue*1000}
                 strokeColor="rgba(231, 226, 255, 0.5)"
                 fillColor = "rgba(231, 226, 255, 0.5)" / >
+              
                 {this.renderListMarker()}
                 {this.renderDirection()}
                 {this.renderMarkerCloseToPos()}
@@ -783,9 +866,9 @@ class MapRE extends Component {
                   {/* {findIcon} */}
                </TouchableOpacity>
             </View>
-                  
-            {this.renderSlider()}
          
+            {this.renderSlider()}
+                
            </View>
 
           <Header
@@ -804,36 +887,10 @@ class MapRE extends Component {
             }}
             backgroundColor={"rgba(51, 51, 51, 1)"}/>
         </DrawerLayoutAndroid>
-        <PopupDialog
-          ref={(popupDialog) => {
-            this.scaleAnimationDialog = popupDialog;
-          }}
-          height={400}
-          width={300}
-          dialogAnimation={scaleAnimation}
-          dialogTitle={<DialogTitle title="ATM Finder App" />}
-          actions={[
-            <DialogButton
-              text="Close"
-              onPress={() => {
-                this.scaleAnimationDialog.dismiss();
-              }}
-             
-            />,
-          ]}>
-          <View style={styles.dialogContentView}>
-            <ImageBackground source={background} style={{width:"100%" ,height:"100%"}}> 
-            <View style={{flex:1,alignItems:"center",justifyContent:"center"}}>
-               <Text style={{fontFamily:"Roboto",fontSize:20,color:"#FFFFFF"}}>ATM Finder - Help find an ATM near you </Text>
-               <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Can we access your location? :( </Text>
-               <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Please check your permissions</Text> 
-               <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}> in your devive setting.</Text>
-               <Text></Text>
-            </View>
-            </ImageBackground> 
-            
-          </View>
-        </PopupDialog>
+        {this.renderViewInfo()}
+        {this.renderViewMess()}
+       
+
       </View>
       </View>
     );
