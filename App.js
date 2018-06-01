@@ -46,7 +46,7 @@ const errorHandler = (e, isFatal) => {
       [{
         text: 'Close',
         onPress: () => {
-          BackAndroid.exitApp();
+          BackHandler.exitApp();
         }
       }]
     );

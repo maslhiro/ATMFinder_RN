@@ -97,7 +97,7 @@ class MapRE extends Component {
 
   componentDidMount() {
     console.log("Did mount");
-    this.scaleAnimationDialogMess.show();
+    this.scaleAnimationDialogMess.show()
     this.watchId = navigator.geolocation.watchPosition(
         position => {
           this.setState({
@@ -119,7 +119,7 @@ class MapRE extends Component {
       },
       error => console.log(error),
       {
-        enableHighAcuracy: false,
+        enableHighAcuracy: true,
         timeout: 30000,
         maximumAge: 1000,
         distanceFilter: 1
@@ -160,20 +160,20 @@ class MapRE extends Component {
       this.getGeoArr(nextState)
       this.getDataWithKey(nextState)
       nextState.markers=this.getArrayMarker(nextState,this.state.distanceValue*1000)
-      console.log(nextState.markers)
-   //   this.getArrayMarker(nextState)
+    //  console.log(nextState.markers)
+    //   this.getArrayMarker(nextState)
     }
-
+    else
     // Get GPS
     if (nextState.getGPS === true) {
     }
-
+    else
     // Get Marker Close to Current Pos
     if (nextState.getATM === true) {
       this.getGeoArr(nextState)
       this.getDataWithKey(nextState);
     }
-
+    else
     
     if (nextState.find_MODE!==0 ) {
       
@@ -273,14 +273,18 @@ class MapRE extends Component {
           key={marker.address}
           title={marker.key}
           description={description}
-          pinColor={String(color)}
-          image={this.renderCustomMarker(key)}
+         // pinColor={String(color)}
+           image={this.renderCustomMarker(key)}
           coordinate={{
             latitude: parseFloat(marker.latitude),
             longitude: parseFloat(marker.longitude)
           }}
         >
-   
+        {/* <Image
+          source={markerBidvbank}
+          style={{width:0,height:0}} 
+          onLoad={() => this.forceUpdate()}
+         /> */}
         </Marker>
         <MapViewDirections
           origin={{
@@ -335,7 +339,7 @@ class MapRE extends Component {
     if (key==="") return null;
     switch(checkDescription(key)){
       case 1:
-      return markerVietcombank
+      return markerVietcombank;      
       case 2:
       return markerViettinbank;
       case 3:
@@ -368,7 +372,11 @@ class MapRE extends Component {
             trackStyle={customStylesSlider.track}
             thumbStyle={customStylesSlider.thumb}
             minimumTrackTintColor='#30a935'
-            onValueChange={value=>this.setState({distanceValue:value})}
+            onValueChange={value=>this.setState({ 
+              shouldRenderListMarker: true,
+              getGPS: false,
+              getATM: false,
+              distanceValue:value})}
           />
 
          <Button
@@ -411,7 +419,7 @@ class MapRE extends Component {
       <View style={styles.dialogContentView}>
         <ImageBackground source={background} style={{width:"100%" ,height:"100%"}}> 
         <View style={{flex:1,alignItems:"center",justifyContent:"center"}}>
-           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Version 0.0.1 </Text> 
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Version 1.0.1 </Text> 
            <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Help find an ATM near you </Text>
            <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Contact 2amteam.uit@gmail.com  </Text> 
            <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>for more infomation.  </Text>
@@ -463,7 +471,6 @@ class MapRE extends Component {
     )
   }
 
-
   showListATM() {
     this.setState({
       shouldRenderListMarker: true,
@@ -476,13 +483,11 @@ class MapRE extends Component {
     this.scaleAnimationDialog.show();
   }
 
- showScaleAnimationDialogMess= () => {
+  showScaleAnimationDialogMess= () => {
   
     this.scaleAnimationDialogMess.show();
   }
 
-
-  
   getGPS() {
     this.setState({
       shouldRenderListMarker: false,
@@ -523,7 +528,7 @@ class MapRE extends Component {
   findLocation_MODE(){
     this.closeDrawer()
     this.setState({
-      find_MODE:1, //findAroundMe_MODE
+      find_MODE:1, //find Location_MODE
       shouldRenderListMarker: false,
       renderDirection: false,
       getAdress:false,
@@ -701,7 +706,7 @@ class MapRE extends Component {
             });
           });
         }),
-        { enableHighAcuracy: false, timeout: 20000, maximumAge: 1000 };
+        { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 };
       })
      
     })
@@ -831,7 +836,8 @@ class MapRE extends Component {
                 // mapType="terrain"
                 showsBuildings={false}
                 ref={c => this.mapView = c}
-                onRegionChangeComplete={e => this.setState({ region: e })}>
+                // onRegionChangeComplete={e => this.setState({ region: e })} 
+                >
                 {/* Render marker tại gps */}
                 {/* <Marker coordinate={  {
                   latitude: this.state.gps.latitude,
