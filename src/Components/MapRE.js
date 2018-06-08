@@ -27,6 +27,7 @@ import Geocoder from "react-native-geocoder";
 import geolib from "geolib";
 import MapViewDirections from "react-native-maps-directions";
 import OfflineBar from 'react-native-offline-status'
+import ActionButton from 'react-native-action-button';
 
 import girl from "../../src/assets/ic_girl.png";
 import searchIcon from "./../../src/assets/ic_search.png"
@@ -56,9 +57,9 @@ class MapRE extends Component {
   constructor(props) {
     super(props);
     database = firebase.database();
-   // Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
+    Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
     this.openDrawer = this.openDrawer.bind(this);
-    arrayMarker = [];
+
     this.mapView=null;
    
     this.state = {
@@ -69,8 +70,8 @@ class MapRE extends Component {
         longitudeDelta:  0.1003880426287509
       },
       gps: {
-        latitude: 10,
-        longitude: 106
+        latitude: 10.8702117,
+        longitude: 106.8037364
       },
       arrayBank:["VietComBank","VietTinBank","AChauBank","AgriBank","BIDVBank","DongABank"],
       arrayDistrict:[],
@@ -78,16 +79,18 @@ class MapRE extends Component {
       // = 1 => Find by Locations
       // = 0 => Find around Locations
       distance:"",
-      arrayVincenty:[],
+      arrayVincenty: [],
+
+      // arrayVincenty:[],
       currentMarker:[],
-      markers: arrayMarker,
+      markers: [],
       shouldRenderListMarker: false,
       renderDirection: false,
       getAdress:false,
       getATM: false,
       getGPS: true,
       distanceValue: 3,
-    };
+    }
    
   }
 
@@ -97,8 +100,8 @@ class MapRE extends Component {
 
   componentDidMount() {
     console.log("Did mount");
-    this.scaleAnimationDialogMess.show()
-    this.watchId = navigator.geolocation.watchPosition(
+    // Get Current Pos
+   navigator.geolocation.getCurrentPosition(
         position => {
           this.setState({
            region: {
@@ -111,8 +114,9 @@ class MapRE extends Component {
               latitude: position.coords.latitude,
               longitude: position.coords.longitude
             },
-            arrayVincenty: getArrMarkerBound(position.coords.latitude,position.coords.longitude,45,5),
-            //  arrayDistrict:this.getGeoArr()
+            // Tính ra mảng 8  tọa đọ nằm gần 
+            arrayVincenty: getArrMarkerBound(position.coords.latitude,position.coords.longitude,45,3),
+            
            
             });
       
@@ -132,16 +136,12 @@ class MapRE extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    console.log(
-      "SHOULD UPDATE: Render List Markers " + nextState.shouldRenderListMarker
-    );
-    console.log("SHOULD UPDATE: Get Gps " + nextState.getGPS);
+    console.log("SHOULD UPDATE: Get ATM " + nextState.shouldRenderListMarker);
     if (
       nextState.getGPS === true ||
       nextState.shouldRenderListMarker === true ||
       nextState.getATM === true||
-      nextState.renderDirection === true||
-      nextState.find_MODE!==-1
+      nextState.renderDirection === true
     ) {
       return true;
     }
@@ -160,9 +160,7 @@ class MapRE extends Component {
       this.getGeoArr(nextState)
       this.getDataWithKey(nextState)
       nextState.markers=this.getArrayMarker(nextState,this.state.distanceValue*1000)
-    //  console.log(nextState.markers)
-    //   this.getArrayMarker(nextState)
-    }
+      }
     else
     // Get GPS
     if (nextState.getGPS === true) {
@@ -187,18 +185,19 @@ class MapRE extends Component {
     prevState.getGPS = false;
     prevState.getATM = false;
     prevState.renderDirection = false;
-    console.log(
-      "DID UPDATE: Render List Markers " + prevState.shouldRenderListMarker
-    );
+
+    prevState.markers = [];
+    prevState.arrayMarker = [];
+    prevState.arrayVincenty = [];
+    
     console.log("DID UPDATE: Get Gps " + prevState.getGPS);
     console.log("DID UPDATE: Get ATM " + prevState.getATM);
-    //  console.log("DID UPDATE: City " + prevState.address.city);
-    //  console.log("DID UPDATE: Address " + prevState.address.district);
+  
   }
 
   componentWillUnmount() {
     console.log("Will Unmount");
-    navigator.geolocation.clearWatch(this.watchId);
+   // navigator.geolocation.clearWatch(this.watchId);
 
   }
 
@@ -246,7 +245,7 @@ class MapRE extends Component {
 
   //  render one marker with Directions
   renderMarkerCloseToPos() {
-    if (this.state.getATM === true) {
+    if (this.state.find_MODE !== 0) {
       var marker = this.getMarkerCloseToCurrentPos(this.state);
       // distance=this.getDistance(marker);
       // console.log("Distance :"+distance)
@@ -436,6 +435,7 @@ class MapRE extends Component {
   renderViewMess(){
     return(
       <PopupDialog
+      key={Dialog1}
       ref={(popupDialog) => {
         this.scaleAnimationDialogMess = popupDialog;
       }}
@@ -445,6 +445,7 @@ class MapRE extends Component {
       dialogTitle={<DialogTitle title="ATM Finder App" />}
       actions={[
         <DialogButton
+          key={buttonDialog}
           text="Close"
           onPress={() => {
             this.scaleAnimationDialogMess.dismiss();
@@ -471,14 +472,6 @@ class MapRE extends Component {
     )
   }
 
-  showListATM() {
-    this.setState({
-      shouldRenderListMarker: true,
-      getGPS: false,
-      getATM: false
-    });
-  }
-
   showScaleAnimationDialog = () => {
     this.scaleAnimationDialog.show();
   }
@@ -488,19 +481,33 @@ class MapRE extends Component {
     this.scaleAnimationDialogMess.show();
   }
 
-  getGPS() {
+  // getGPS() {
+  //   this.setState({
+  //     shouldRenderListMarker: false,
+  //     getGPS: true,
+  //     getATM: false
+  //   });
+  // }
+
+  showListATM() {
     this.setState({
-      shouldRenderListMarker: false,
-      getGPS: true,
-      getATM: false
+      shouldRenderListMarker: true,
+      getGPS: false,
+      getATM: false,
+  
     });
   }
+
 
   getATM() {
     this.setState({
       shouldRenderListMarker: false,
       getGPS: false,
-      getATM: true
+      getATM: true,
+      // markers : [],
+      // arrayMarker : [],
+      // arrayVincenty : getArrMarkerBound(this.state.gps.latitude,this.state.gps.longitude,45,3),
+      // arrayDistrict : [],
     });
   }
 
@@ -516,11 +523,14 @@ class MapRE extends Component {
     this.closeDrawer()
     this.setState({
       find_MODE:0, //findAroundMe_MODE
-      shouldRenderListMarker: false,
+      shouldRenderListMarker: true,
       renderDirection: false,
       getAdress:false,
       getATM: false,
       getGPS: false,
+      // markers : [],
+      // arrayVincenty : [],
+      // arrayDistrict : [],
       distanceValue:3
     })
   }
@@ -532,8 +542,12 @@ class MapRE extends Component {
       shouldRenderListMarker: false,
       renderDirection: false,
       getAdress:false,
-      getATM: false,
+      getATM: true,
       getGPS: false,
+      // markers : [],
+   
+      // arrayVincenty : [],
+      // arrayDistrict : [],
       distanceValue:3
     })
   }
@@ -743,7 +757,7 @@ class MapRE extends Component {
   }
    
   render() {
-    // console.log("RENDER :"+this.state.region)
+    //console.log("RENDER :"+this.state.arrayVincenty)
     var navigationView = (
       <View style={{ flex: 1, backgroundColor: "#fff", justifyContent:"center"}}>
          <View style={{alignItems:"center",padding:20}}>
@@ -836,7 +850,6 @@ class MapRE extends Component {
                 // mapType="terrain"
                 showsBuildings={false}
                 ref={c => this.mapView = c}
-                // onRegionChangeComplete={e => this.setState({ region: e })} 
                 >
                 {/* Render marker tại gps */}
                 {/* <Marker coordinate={  {
@@ -858,19 +871,24 @@ class MapRE extends Component {
                 strokeColor="rgba(231, 226, 255, 0.5)"
                 fillColor = "rgba(231, 226, 255, 0.5)" / >
               
+              {/* Mode Show List Atm */}
                 {this.renderListMarker()}
                 {this.renderDirection()}
+
+              {/* Mode Render a Atm */}
                 {this.renderMarkerCloseToPos()}
                </MapView>
-              
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={styles.mapButton}
-                //onPress={()=>this.getATM()}
-                onPress={()=>{this.state.find_MODE===0?this.showListATM():this.getATM()}}>
-                  <Image source={searchIcon} style={{width:50,height:50}}></Image>
-                  {/* {findIcon} */}
-               </TouchableOpacity>
+               <ActionButton buttonColor="rgba(231,76,60,1)">
+          <ActionButton.Item buttonColor='#9b59b6' title="New Task" onPress={() => console.log("notes tapped!")}>
+            <Icon name="search" style={styles.actionButtonIcon} />
+          </ActionButton.Item>
+          <ActionButton.Item buttonColor='#3498db' title="Notifications" onPress={() => {}}>
+            <Icon name="computers" style={styles.actionButtonIcon} />
+          </ActionButton.Item>
+          <ActionButton.Item buttonColor='#1abc9c' title="All Tasks" onPress={() => {}}>
+            <Icon name="computers" style={styles.actionButtonIcon} />
+          </ActionButton.Item>
+        </ActionButton>
             </View>
          
             {this.renderSlider()}
@@ -894,7 +912,7 @@ class MapRE extends Component {
             backgroundColor={"rgba(51, 51, 51, 1)"}/>
         </DrawerLayoutAndroid>
         {this.renderViewInfo()}
-        {this.renderViewMess()}
+      
        
 
       </View>
@@ -966,6 +984,11 @@ const styles = StyleSheet.create({
     flex:1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  actionButtonIcon: {
+    fontSize: 20,
+    height: 22,
+    color: 'white',
   },
 
 });

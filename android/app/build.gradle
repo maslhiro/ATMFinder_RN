@@ -157,6 +157,7 @@ dependencies {
     compile project(':react-native-geocoder')
     compile project(':react-native-splash-screen')
     compile project(':react-native-exception-handler')
+
 }
 
 // Run this once to be able to run the application with BUCK

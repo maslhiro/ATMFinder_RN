@@ -12,6 +12,7 @@
     "geolib": "^2.0.24",
     "react": "16.3.0-alpha.1",
     "react-native": "0.54.0-rc.4",
+    "react-native-action-button": "^2.8.4",
     "react-native-elements": "^0.19.1",
     "react-native-exception-handler": "^2.7.5",
     "react-native-geocoder": "^0.5.0",
