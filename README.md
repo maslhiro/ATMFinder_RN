@@ -18,11 +18,14 @@
   - react-native-exception-handler: https://github.com/master-atul/react-native-exception-handler 
   - bugsnag-react-native :
   https://github.com/bugsnag/bugsnag-react-native
+  - react-native-action-button: 
+https://github.com/mastermoo/react-native-action-button
+  - react-native-google-places:
+https://github.com/tolu360/react-native-google-places
+
+  
 <img width="933" alt="ui" src="https://user-images.githubusercontent.com/26876671/38883831-360c3488-4298-11e8-8941-d89ae3510339.png">
 
 ## Demo 
-
-### Find Around Mode
-
-![giphy](https://user-images.githubusercontent.com/26876671/39966261-f65be46a-56d2-11e8-9106-2057745e30dc.gif)
+https://youtu.be/lbHtiUYnbB8
 
