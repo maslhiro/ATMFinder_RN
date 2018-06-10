@@ -16,6 +16,7 @@
     "react-native-elements": "^0.19.1",
     "react-native-exception-handler": "^2.7.5",
     "react-native-geocoder": "^0.5.0",
+    "react-native-google-places": "^2.5.0",
     "react-native-maps": "0.20.1",
     "react-native-maps-directions": "^1.6.0",
     "react-native-offline-status": "^1.0.0",

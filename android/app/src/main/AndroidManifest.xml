@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/> 
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -14,7 +14,7 @@
       android:theme="@style/AppTheme">
        <meta-data
       android:name="com.google.android.geo.API_KEY"
-      android:value="AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8"/>
+      android:value="AIzaSyDB9j_-X2j5iIkJ1nUKFGOQoHVA9jYaF6E"/>
       <meta-data android:name="com.bugsnag.android.API_KEY"
       android:value="8fa914dce612bff1af78ec474610a5de"/>
         <activity

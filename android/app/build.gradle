@@ -153,11 +153,11 @@ dependencies {
     compile ("com.facebook.react:react-native:0.54.0-rc.4") { force = true }
     compile "com.facebook.react:react-native:+"  // From node_modules
     compile (project(':react-native-maps'))
+    compile project(':react-native-google-places')
     compile project(':bugsnag-react-native')
     compile project(':react-native-geocoder')
     compile project(':react-native-splash-screen')
     compile project(':react-native-exception-handler')
-
 }
 
 // Run this once to be able to run the application with BUCK

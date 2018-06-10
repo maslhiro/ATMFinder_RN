@@ -28,9 +28,13 @@ import geolib from "geolib";
 import MapViewDirections from "react-native-maps-directions";
 import OfflineBar from 'react-native-offline-status'
 import ActionButton from 'react-native-action-button';
+import RNGooglePlaces from "react-native-google-places"
 
-import girl from "../../src/assets/ic_girl.png";
-import searchIcon from "./../../src/assets/ic_search.png"
+import ic_gps from "../assets/ic_gps.png"
+import ic_info from "./../../src/assets/ic_info.png"
+import ic_findNear from "./../../src/assets/ic_findNear.png"
+import ic_search from "./../../src/assets/ic_search.png"
+import ic_findAround from "./../../src/assets/ic_findAround.png"
 import markerVietcombank from "./../../src/assets/ic_markerVietCom.png"
 import markerViettinbank from "./../../src/assets/ic_markerVietTin.png"
 import markerDongabank from "./../../src/assets/ic_markerDongA.png"
@@ -39,14 +43,14 @@ import markerAchaubank from "./../../src/assets/ic_markerACB.png"
 import markerBidvbank from "./../../src/assets/ic_markerBidv.png"
 
 import background from "./../../src/assets/background.jpg"
-
+//import MapStyle from "./MapStyle"
 const findIcon = <Icon name="search" size={30} color="#333" />;
 const GOOGLE_MAPS_APIKEY = "AIzaSyDmMKv6H1UmRN-1D8HUFj-C_WrdAlkwwB8";
 
 const titleHeader_findMode01 = "FIND BY LOCATION";
 const titleHeader_findMode02 = "FIND AROUND";
-const colorButtonDrawer="rgba(233, 250, 227, 1)"
-const colorTextButtonDrawer="rgba(0, 0, 0, 1)"
+const colorButtonDrawer="rgb(233, 250, 227)"
+const colorTextButtonDrawer="rgb(0, 0, 0)"
 
 const slideAnimation = new SlideAnimation({ slideFrom: 'bottom' });
 const scaleAnimation = new ScaleAnimation();
@@ -66,8 +70,8 @@ class MapRE extends Component {
       region: {
         latitude: 10.8702117,
         longitude: 106.8037364,
-        latitudeDelta: 0.1492546745746388,
-        longitudeDelta:  0.1003880426287509
+        latitudeDelta:0.02108755978843213,
+        longitudeDelta: 0.012548379600062276
       },
       gps: {
         latitude: 10.8702117,
@@ -80,7 +84,8 @@ class MapRE extends Component {
       // = 0 => Find around Locations
       distance:"",
       arrayVincenty: [],
-
+      getSearchBoxResult:false,
+      address:"",
       // arrayVincenty:[],
       currentMarker:[],
       markers: [],
@@ -100,36 +105,26 @@ class MapRE extends Component {
 
   componentDidMount() {
     console.log("Did mount");
-    // Get Current Pos
-   navigator.geolocation.getCurrentPosition(
-        position => {
-          this.setState({
+
+    RNGooglePlaces.getCurrentPlace()
+    .then((results) => {
+           this.setState({
            region: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: 0.011,
-              longitudeDelta: 0.07
+              latitude: results[0].latitude,
+              longitude: results[0].longitude,
+              latitudeDelta: 0.02108755978843213,
+              longitudeDelta: 0.012548379600062276
             },
             gps: {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
+              latitude:results[0].latitude,
+              longitude: results[0].longitude,
             },
             // Tính ra mảng 8  tọa đọ nằm gần 
-            arrayVincenty: getArrMarkerBound(position.coords.latitude,position.coords.longitude,45,3),
-            
-           
-            });
-      
-      },
-      error => console.log(error),
-      {
-        enableHighAcuracy: true,
-        timeout: 30000,
-        maximumAge: 1000,
-        distanceFilter: 1
-      }
-    );
-  }
+            arrayVincenty: getArrMarkerBound(results[0].latitude,results[0].longitude,45,3),
+    })
+    ,(error) => console.log(error.message),{timeout:20000}
+  })
+}
 
   componentWillReceiveProps(nextProps) {
     console.log("WILL RECEIVE : NextProp");
@@ -141,8 +136,12 @@ class MapRE extends Component {
       nextState.getGPS === true ||
       nextState.shouldRenderListMarker === true ||
       nextState.getATM === true||
-      nextState.renderDirection === true
+      nextState.renderDirection === true||
+      nextState.getSearchBoxResult===true
     ) {
+      // this.getGeoArr(nextState);
+      // this.getGeoArr(nextState);
+
       return true;
     }
     return false;
@@ -157,9 +156,12 @@ class MapRE extends Component {
 
     // Get Array Markers from FireBase
     if (nextState.shouldRenderListMarker === true) {
+      nextState.arrayVincenty=
+      getArrMarkerBound(nextState.gps.latitude,nextState.gps.longitude,45,3),
+
       this.getGeoArr(nextState)
       this.getDataWithKey(nextState)
-      nextState.markers=this.getArrayMarker(nextState,this.state.distanceValue*1000)
+//     nextState.markers=this.getArrayMarker(nextState,this.state.distanceValue*1000)
       }
     else
     // Get GPS
@@ -168,6 +170,9 @@ class MapRE extends Component {
     else
     // Get Marker Close to Current Pos
     if (nextState.getATM === true) {
+      nextState.arrayVincenty=
+       getArrMarkerBound(nextState.gps.latitude,nextState.gps.longitude,45,3),
+
       this.getGeoArr(nextState)
       this.getDataWithKey(nextState);
     }
@@ -185,10 +190,9 @@ class MapRE extends Component {
     prevState.getGPS = false;
     prevState.getATM = false;
     prevState.renderDirection = false;
-
-    prevState.markers = [];
-    prevState.arrayMarker = [];
-    prevState.arrayVincenty = [];
+    prevState.getSearchBoxResult = false;
+    // prevState.markers = [];
+    // prevState.arrayVincenty = [];
     
     console.log("DID UPDATE: Get Gps " + prevState.getGPS);
     console.log("DID UPDATE: Get ATM " + prevState.getATM);
@@ -494,10 +498,11 @@ class MapRE extends Component {
       shouldRenderListMarker: true,
       getGPS: false,
       getATM: false,
-  
+      markers : [],
+      arrayVincenty : getArrMarkerBound(this.state.gps.latitude,this.state.gps.longitude,45,3),
+      arrayDistrict : [],
     });
   }
-
 
   getATM() {
     this.setState({
@@ -513,6 +518,39 @@ class MapRE extends Component {
 
   openDrawer() {
     this.refs["DRAWER_REF"].openDrawer();
+  }
+  
+  openSearchModal() {
+    RNGooglePlaces.openAutocompleteModal({
+      type: 'establishment',
+      country: 'VN',
+      latitude: 10.8702117,
+      longitude:  106.8037364,
+      radius: 10,
+      useOverlay : true
+    })
+    .then((place) => {
+      this.setState({
+        getSearchBoxResult:true,
+        address:place.name,
+        gps:{
+          latitude:place.latitude,
+          longitude:place.longitude
+        },
+        region: {
+          latitude: place.latitude,
+          longitude: place.longitude,
+          latitudeDelta:0.02108755978843213,
+          longitudeDelta: 0.012548379600062276,
+        },
+        arrayVincenty: getArrMarkerBound(place.latitude,place.longitude,45,3),
+
+      })
+		console.log(place);
+		// place represents user's selection from the
+		// suggestions and it is a simplified Google Place object.
+    })
+    .catch(error => console.log(error.message));  // error is a Javascript Error object
   }
 
   closeDrawer() {
@@ -535,10 +573,10 @@ class MapRE extends Component {
     })
   }
 
-  findLocation_MODE(){
+  findNearMe_MODE(){
     this.closeDrawer()
     this.setState({
-      find_MODE:1, //find Location_MODE
+      find_MODE:1, //find Near_MODE
       shouldRenderListMarker: false,
       renderDirection: false,
       getAdress:false,
@@ -720,7 +758,7 @@ class MapRE extends Component {
             });
           });
         }),
-        { enableHighAcuracy: true, timeout: 20000, maximumAge: 1000 };
+        { enableHighAcuracy: true, timeout: 20000 };
       })
      
     })
@@ -757,165 +795,86 @@ class MapRE extends Component {
   }
    
   render() {
-    //console.log("RENDER :"+this.state.arrayVincenty)
-    var navigationView = (
-      <View style={{ flex: 1, backgroundColor: "#fff", justifyContent:"center"}}>
-         <View style={{alignItems:"center",padding:20}}>
-          <Image
-            style={{width: 80, height: 80}}
-            source={girl}></Image>
-
-        </View>
-        <View style={{ flex: 4, backgroundColor: "#fff" }}>
-        <View style={{alignItems:"center",padding:20}}>
-          <Text style = {
-            {
-              alignItems: "center",
-              justifyContent: "center"
-            }
-          } > CHANCE MODE </Text>
-        </View>
-        <View style={{alignItems:"center"}}>
-          <Button
-            raised
-            icon={{ name: 'search' ,color:{colorTextButtonDrawer}}}
-            color={colorTextButtonDrawer}
-            title='Search By Location'
-            onPress={()=>this.findLocation_MODE()}
-            buttonStyle={{
-              backgroundColor: colorButtonDrawer,
-              borderColor: "transparent",
-              borderWidth: 0,
-              borderRadius: 10
-            }} />
-          <Text>   </Text>     
-          <Button
-            raised
-            icon={{ name: 'healing',color:{colorTextButtonDrawer} }}
-            title='Search Around Me '
-            color={colorTextButtonDrawer}
-            onPress={()=>this.findAroundMe_MODE()}
-            buttonStyle={{
-              backgroundColor: colorButtonDrawer,
-              borderColor: "transparent",
-              borderWidth: 0,
-              borderRadius: 10
-            }} />
-            
-        </View>   
-        <View style={{alignItems:"center",padding:20}}>
-          <Text style = {
-            {
-              alignItems: "center",
-              justifyContent: "center"
-            }
-          } > ABOUT </Text>
-        </View>  
-        <View style={{alignItems:"center"}}>
-          <Button
-            raised
-            icon={{ name: 'info' ,color:{colorTextButtonDrawer}}}
-            color={colorTextButtonDrawer}
-            title='Version'
-            onPress={this.showScaleAnimationDialog}
-            buttonStyle={{
-              backgroundColor: colorButtonDrawer,
-              borderColor: "transparent",
-              borderWidth: 0,
-              borderRadius: 10
-            }} />
-             
-        </View>    
-        </View>
-      </View>
-    );
-
+    console.log("RENDER :"+this.state.region)
     return (
       <View style={{ flex: 1 }}>
-      <OfflineBar offlineText="Oops! We cant connect to Internet"/>
-      <View style={{ flex: 1 }}>
-        <DrawerLayoutAndroid
-          drawerWidth={240}
-          ref={"DRAWER_REF"}
-          drawerPosition={DrawerLayoutAndroid.positions.Left}
-          renderNavigationView={() => navigationView}>
+        <OfflineBar offlineText="Oops! We cant connect to Internet"/>
+        <View style={{ flex: 1 }}>
           <View style={styles.container}>
             <View style={styles.container01}>
               <MapView
                 provider="google"
                 style={styles.map}
-                showsUserLocation={true}
-                showsMyLocationButton={true}
+                // showsUserLocation={true}
+                //showsMyLocationButton={true}
                 region={this.state.region}
-                // mapType="terrain"
+                onRegionChangeComplete={(e)=>console.log(e)}
+                customMapStyle={MapStyle}
                 showsBuildings={false}
                 ref={c => this.mapView = c}
                 >
                 {/* Render marker tại gps */}
-                {/* <Marker coordinate={  {
+                <Marker 
+                  coordinate={  {
                   latitude: this.state.gps.latitude,
                   longitude: this.state.gps.longitude
-                }}>
-                  <Image
-                    style={{width: 24, height: 24}}
-                    source={imageGps}></Image>
-                </Marker> */}
-                
-                < Circle center = {
+                  }}
+                  image={ic_gps}
+                />
+               
+                {/* < Circle center = {
                 {
                   latitude: this.state.find_MODE===0?this.state.gps.latitude:20,
                   longitude:  this.state.find_MODE===0?this.state.gps.longitude:20
-                }
-                }
+                } */}
+                {/* }
                 radius = {this.state.distanceValue*1000}
                 strokeColor="rgba(231, 226, 255, 0.5)"
-                fillColor = "rgba(231, 226, 255, 0.5)" / >
+                fillColor = "rgba(231, 226, 255, 0.5)" / > */}
               
-              {/* Mode Show List Atm */}
+                {/* Mode Show List Atm */}
                 {this.renderListMarker()}
                 {this.renderDirection()}
 
-              {/* Mode Render a Atm */}
+                {/* Mode Render a Atm */}
                 {this.renderMarkerCloseToPos()}
                </MapView>
-               <ActionButton buttonColor="rgba(231,76,60,1)">
-          <ActionButton.Item buttonColor='#9b59b6' title="New Task" onPress={() => console.log("notes tapped!")}>
-            <Icon name="search" style={styles.actionButtonIcon} />
-          </ActionButton.Item>
-          <ActionButton.Item buttonColor='#3498db' title="Notifications" onPress={() => {}}>
-            <Icon name="computers" style={styles.actionButtonIcon} />
-          </ActionButton.Item>
-          <ActionButton.Item buttonColor='#1abc9c' title="All Tasks" onPress={() => {}}>
-            <Icon name="computers" style={styles.actionButtonIcon} />
-          </ActionButton.Item>
-        </ActionButton>
+                <ActionButton 
+                  buttonColor="rgba(231,76,60,1)"
+                  renderIcon={active => active ? (<Icon name="healing" style={styles.actionButtonIcon} /> ) 
+                  : (<Icon name="healing" style={styles.actionButtonIcon} />)}>
+                >
+                 <ActionButton.Item buttonColor='#9b59b6' title="Find Atm Near Me" onPress={() => this.getATM()}>
+                 <Image source={ic_findNear}/>
+                 </ActionButton.Item>
+                 <ActionButton.Item buttonColor='#3498db' title="Find Around Me" onPress={() => this.showListATM()}>
+                 <Image source={ic_findAround}/>
+                 </ActionButton.Item>
+                 <ActionButton.Item buttonColor='#1abc9c' title="All Tasks" onPress={() => {}}>
+                 <Icon name="settings" style={styles.actionButtonIcon} />
+                 </ActionButton.Item>
+                </ActionButton>
             </View>
-         
             {this.renderSlider()}
-                
-           </View>
-
-          <Header
-            placement="left"
-            leftComponent={{
-              icon: "menu",
-              color: "rgba(255, 255, 255, 1)",
-              onPress: () => this.openDrawer()
-            }}
-            centerComponent = {
-            {
-              text: this.state.find_MODE!==0?titleHeader_findMode01:titleHeader_findMode02,
-              style: {
-                color: "#fff"
-              }
-            }}
-            backgroundColor={"rgba(51, 51, 51, 1)"}/>
-        </DrawerLayoutAndroid>
-        {this.renderViewInfo()}
-      
-       
-
-      </View>
+            </View>
+            <View style={styles.searchBox}>
+			    	<View style={styles.inputWrapper}>
+					  <Text style={styles.label}>SEARCH LOCATION</Text>
+            <Text> </Text>
+          	<View style={{flex:1,alignItems:"center",justifyContent:"space-evenly",flexDirection:"row"}}>
+						<Icon name="search" size={15} color="#FF5E3A"/>
+						<Text
+            onPress={()=>this.openSearchModal()}
+            >{this.state.getSearchBoxResult===true?
+              this.state.address:"Search"}</Text>
+            <Text>  </Text>
+					  </View>
+            <Text> </Text>
+            </View>
+          </View>
+          
+            {this.renderViewInfo()}
+          </View>
       </View>
     );
   }
@@ -925,7 +884,7 @@ class MapRE extends Component {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: 70,
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
@@ -989,6 +948,33 @@ const styles = StyleSheet.create({
     fontSize: 20,
     height: 22,
     color: 'white',
+  },
+  inputWrapper:{
+    marginLeft:15,
+    marginRight:10,
+    marginTop:10,
+    marginBottom:0,
+    backgroundColor:"#DDDDDD",
+    opacity:0.7,
+    borderRadius:7
+  },
+  secondInputWrapper:{
+    marginLeft:15,
+    marginRight:10,
+    marginTop:0,
+    backgroundColor:"#DDDDDD",
+    opacity:0.7,
+    borderRadius:7
+  } ,
+  inputSearch:{
+    fontSize:14
+  },
+  label:{
+    fontSize:10,
+    fontStyle: "italic",
+    marginLeft:10,
+    marginTop:10,
+    marginBottom:0
   },
 
 });
@@ -1162,3 +1148,238 @@ function checkDescription(key){
 }
 
 export default MapRE;
+
+
+const MapStyle = 
+[
+  {
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#ebe3cd"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#523735"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#f5f1e6"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#c9b2a6"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#dcd2be"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#ae9e90"
+      }
+    ]
+  },
+  {
+    "featureType": "landscape.natural",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dfd2ae"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dfd2ae"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#93817c"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.business",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry.fill",
+    "stylers": [
+      {
+        "color": "#a5b076"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#447530"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#f5f1e6"
+      }
+    ]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#fdfcf8"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#f8c967"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#e9bc62"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#e98d58"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#db8555"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#806b63"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.line",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dfd2ae"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.line",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#8f7d77"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.line",
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#ebe3cd"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#dfd2ae"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry.fill",
+    "stylers": [
+      {
+        "color": "#b9d3c2"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#92998d"
+      }
+    ]
+  }
+]
