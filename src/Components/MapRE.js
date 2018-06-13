@@ -159,6 +159,8 @@ class MapRE extends Component {
       nextState.arrayVincenty=
       getArrMarkerBound(nextState.gps.latitude,nextState.gps.longitude,45,3),
 
+      // nextState.marker = [];
+
       this.getGeoArr(nextState)
       this.getDataWithKey(nextState)
 //     nextState.markers=this.getArrayMarker(nextState,this.state.distanceValue*1000)
@@ -172,7 +174,7 @@ class MapRE extends Component {
     if (nextState.getATM === true) {
       nextState.arrayVincenty=
        getArrMarkerBound(nextState.gps.latitude,nextState.gps.longitude,45,3),
-
+      
       this.getGeoArr(nextState)
       this.getDataWithKey(nextState);
     }
@@ -210,22 +212,21 @@ class MapRE extends Component {
     console.log("RENDER: " + this.state.shouldRenderListMarker);
     
     if (this.state.shouldRenderListMarker === true) {
-      console.log("RENDER Marker");
+      console.log("RENDER List Marker");
+      if(this.state.markers.length === 0) console.log("Empty List Marker")
+      else
       return (this.state.markers.map(marker => (
         <Marker
           key={marker.key}
           coordinate={{
-            latitude: parseFloat(marker.latitude),
-            longitude: parseFloat(marker.longitude)
+            latitude: parseFloat(marker.data.lat),
+            longitude: parseFloat(marker.data.long)
           }} 
           image={this.renderCustomMarker(marker.key)}
           title={marker.key}
           onCalloutPress={() => this.markerClick(marker)}
-          description={marker.address+"\n Amount: "+marker.amount}
+          description={marker.data.Address+"\n Amount: "+marker.data.Amount}
         >
-        {/* <Image
-                style={{width: 40, height: 40}}
-                 source={markerVietcombank}></Image>      */}
         </Marker>
       )));
     }
@@ -239,7 +240,7 @@ class MapRE extends Component {
         key: data.key ? data.key : "",
         address: data.address ? data.address : "",
         amount: data.amount ? data.amount : "",
-        workingHour: data.qqorkingHour ? data.workingHour : 0,
+        workingHour: data.workingHour ? data.workingHour : 0,
         latitude: data.latitude ? data.latitude : 20,
         longitude: data.longitude ? data.longitude : 20
       },
@@ -500,7 +501,7 @@ class MapRE extends Component {
       getATM: false,
       markers : [],
       arrayVincenty : getArrMarkerBound(this.state.gps.latitude,this.state.gps.longitude,45,3),
-      arrayDistrict : [],
+      
     });
   }
 
@@ -793,7 +794,7 @@ class MapRE extends Component {
     console.log(annotations)
     dataState.arrayDistrict=annotations 
   }
-   
+  
   render() {
     console.log("RENDER :"+this.state.region)
     return (
@@ -822,19 +823,9 @@ class MapRE extends Component {
                   image={ic_gps}
                 />
                
-                {/* < Circle center = {
-                {
-                  latitude: this.state.find_MODE===0?this.state.gps.latitude:20,
-                  longitude:  this.state.find_MODE===0?this.state.gps.longitude:20
-                } */}
-                {/* }
-                radius = {this.state.distanceValue*1000}
-                strokeColor="rgba(231, 226, 255, 0.5)"
-                fillColor = "rgba(231, 226, 255, 0.5)" / > */}
-              
                 {/* Mode Show List Atm */}
                 {this.renderListMarker()}
-                {this.renderDirection()}
+                {/* {this.renderDirection()} */}
 
                 {/* Mode Render a Atm */}
                 {this.renderMarkerCloseToPos()}
