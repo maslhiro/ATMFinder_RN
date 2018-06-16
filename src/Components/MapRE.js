@@ -548,6 +548,8 @@ class MapRE extends Component {
     .then((place) => {
       this.setState({
         getSearchBoxResult:true,
+        getATM : false,
+        shouldRenderListMarker :false,
         address:place.name,
         gps:{
           latitude:place.latitude,
@@ -560,7 +562,15 @@ class MapRE extends Component {
           longitudeDelta: 0.012548379600062276,
         },
         arrayVincenty: getArrMarkerBound(place.latitude,place.longitude,45,3),
-
+        currentMarker: {
+          key: "",
+          address: "",
+          amount: "",
+          workingTime: 0,
+          latitude:20,
+          longitude: 20
+        },
+        renderDirection :false
       })
 		console.log(place);
 		// place represents user's selection from the
@@ -745,6 +755,19 @@ class MapRE extends Component {
       })
 
     })
+
+
+    // dataState.markers.map(marker=>{
+    //   final.push( {
+    //     key: marker.key,
+    //     address: marker.data.Address,
+    //     amount: marker.data.Amount,
+    //     workingTime: marker.data.WorkingTime,
+    //     latitude: marker.data.lat,
+    //     longitude: marker.data.long
+    //   })
+
+    // })
       //   if(geolib.getDistance(
       //   {
       //     latitude: marker.data.lat,
@@ -895,7 +918,7 @@ class MapRE extends Component {
                   renderIcon={active => active ? (<Icon name="healing" style={styles.actionButtonIcon} /> ) 
                   : (<Icon name="healing" style={styles.actionButtonIcon} />)}>
                 >
-                 <ActionButton.Item buttonColor='#9b59b6' title="Find Atm Near Me" onPress={() => this.getATM()}>
+                 <ActionButton.Item buttonColor='#9b59b6' title="Find An Atm Near Me" onPress={() => this.getATM()}>
                  <Image source={ic_findNear}/>
                  </ActionButton.Item>
                  <ActionButton.Item buttonColor='#3498db' title="Find Around Me" onPress={() => this.showListATM()}>
