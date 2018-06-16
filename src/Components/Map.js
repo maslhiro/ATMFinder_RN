@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, Button, StyleSheet } from "react-native";
+import { View, Button, StyleSheet,Text } from "react-native";
 import MapView, { Marker, Callout } from "react-native-maps";
 
 const LAT = 10.8710591;
@@ -19,7 +19,7 @@ export default class Map extends Component {
         {
           id: 0,
           amount: 99,
-          title: "Nhân văn",
+          title: "120 Xa lo Ha Noi, Phuong Tan Phu, Quan 9",
           coordinates: {
             latitude: 10.8710591,
             longitude: 106.7996051
@@ -65,8 +65,15 @@ export default class Map extends Component {
             <Marker
               key={marker.id}
               coordinate={marker.coordinates}
-              title={marker.title}
-            />
+              onCalloutPress={()=>alert("Ban Vua Nhan A")}
+            >
+              <Callout tooltip={false}>
+              <Text>{marker.title}</Text>
+              <Text>Amount : 2</Text>
+              <Text>WorkingTime: 24/24</Text>
+              </Callout>
+
+            </Marker>
           ))}
         </MapView>
       </View>

@@ -1,3 +1,4 @@
+<script src="http://localhost:8097"></script>
 import React, { Component, PropTypes } from "react";
 import {
   View,
@@ -94,7 +95,7 @@ class MapRE extends Component {
       getAdress:false,
       getATM: false,
       getGPS: true,
-      distanceValue: 3,
+      distanceValue: 1,
     }
    
   }
@@ -108,20 +109,24 @@ class MapRE extends Component {
 
     RNGooglePlaces.getCurrentPlace()
     .then((results) => {
-           this.setState({
-           region: {
-              latitude: results[0].latitude,
-              longitude: results[0].longitude,
-              latitudeDelta: 0.02108755978843213,
-              longitudeDelta: 0.012548379600062276
-            },
-            gps: {
-              latitude:results[0].latitude,
-              longitude: results[0].longitude,
-            },
-            // Tính ra mảng 8  tọa đọ nằm gần 
-            arrayVincenty: getArrMarkerBound(results[0].latitude,results[0].longitude,45,3),
-    })
+          this.getGeoArr_First(results)
+
+    // Test       
+    //        this.setState({
+    //        region: {
+    //           latitude: results[0].latitude,
+    //           longitude: results[0].longitude,
+    //           latitudeDelta: 0.02108755978843213,
+    //           longitudeDelta: 0.012548379600062276
+    //         },
+    //         gps: {
+    //           latitude:results[0].latitude,
+    //           longitude: results[0].longitude,
+    //         },
+    //         // Tính ra mảng 8  tọa đọ nằm gần 
+    //         arrayVincenty: getArrMarkerBound(results[0].latitude,results[0].longitude,45,3),
+             
+    // })
     ,(error) => console.log(error.message),{timeout:20000}
   })
 }
@@ -163,6 +168,7 @@ class MapRE extends Component {
 
       this.getGeoArr(nextState)
       this.getDataWithKey(nextState)
+      nextState.markers = this.getArrayMarker(nextState)
 //     nextState.markers=this.getArrayMarker(nextState,this.state.distanceValue*1000)
       }
     else
@@ -217,16 +223,23 @@ class MapRE extends Component {
       else
       return (this.state.markers.map(marker => (
         <Marker
+          id ={marker.key}
           key={marker.key}
           coordinate={{
-            latitude: parseFloat(marker.data.lat),
-            longitude: parseFloat(marker.data.long)
+            latitude: parseFloat(marker.latitude),
+            longitude: parseFloat(marker.longitude)
           }} 
           image={this.renderCustomMarker(marker.key)}
-          title={marker.key}
+          // title={marker.key}
           onCalloutPress={() => this.markerClick(marker)}
-          description={marker.data.Address+"\n Amount: "+marker.data.Amount}
+          // description={marker.address+"\n Amount: "+marker.amount}
         >
+        <Callout>
+          <Text style={{textAlign:"center",fontStyle:"italic",textDecorationStyle:"solid",fontWeight:"bold"}}>{marker.key}</Text>
+          <Text>{marker.address}</Text>
+          <Text>Amout : {marker.amount}</Text>
+          <Text>Working Hour : {marker.workingTime}</Text>
+        </Callout>
         </Marker>
       )));
     }
@@ -240,7 +253,7 @@ class MapRE extends Component {
         key: data.key ? data.key : "",
         address: data.address ? data.address : "",
         amount: data.amount ? data.amount : "",
-        workingHour: data.workingHour ? data.workingHour : 0,
+        workingTime: data.workingTime ? data.workingTime : 0,
         latitude: data.latitude ? data.latitude : 20,
         longitude: data.longitude ? data.longitude : 20
       },
@@ -250,7 +263,7 @@ class MapRE extends Component {
 
   //  render one marker with Directions
   renderMarkerCloseToPos() {
-    if (this.state.find_MODE !== 0) {
+    if (this.state.getATM === true) {
       var marker = this.getMarkerCloseToCurrentPos(this.state);
       // distance=this.getDistance(marker);
       // console.log("Distance :"+distance)
@@ -263,8 +276,8 @@ class MapRE extends Component {
     var marker = {
       key: dataMarker.key ? dataMarker.key : "",
       address: dataMarker.address ? dataMarker.address : "",
-      amount: dataMarker.amount ? dataMarker.longitude : "",
-      workingHour: dataMarker.longitude ? dataMarker.amount : 0,
+      amount: dataMarker.amount ? dataMarker.amount : "",
+      workingTime: dataMarker.workingTime ? dataMarker.workingTime : 0,
       latitude: dataMarker.latitude ? dataMarker.latitude : 20,
       longitude: dataMarker.longitude ? dataMarker.longitude : 20
     };
@@ -275,20 +288,22 @@ class MapRE extends Component {
       <View>
         <Marker
           key={marker.address}
-          title={marker.key}
-          description={description}
+        //  title={marker.key}
+        //  description={description}
          // pinColor={String(color)}
+         
            image={this.renderCustomMarker(key)}
           coordinate={{
             latitude: parseFloat(marker.latitude),
             longitude: parseFloat(marker.longitude)
           }}
         >
-        {/* <Image
-          source={markerBidvbank}
-          style={{width:0,height:0}} 
-          onLoad={() => this.forceUpdate()}
-         /> */}
+         <Callout>
+          <Text style={{textAlign:"center",fontStyle:"italic",textDecorationStyle:"solid",fontWeight:"bold"}}>{marker.key}</Text>
+          <Text>{marker.address}</Text>
+          <Text>Amout : {marker.amount}</Text>
+          <Text>Working Hour : {marker.workingTime}</Text>
+        </Callout>
         </Marker>
         <MapViewDirections
           origin={{
@@ -499,7 +514,7 @@ class MapRE extends Component {
       shouldRenderListMarker: true,
       getGPS: false,
       getATM: false,
-      markers : [],
+      // markers : [],
       arrayVincenty : getArrMarkerBound(this.state.gps.latitude,this.state.gps.longitude,45,3),
       
     });
@@ -523,7 +538,7 @@ class MapRE extends Component {
   
   openSearchModal() {
     RNGooglePlaces.openAutocompleteModal({
-      type: 'establishment',
+      type: 'address||establishment',
       country: 'VN',
       latitude: 10.8702117,
       longitude:  106.8037364,
@@ -598,12 +613,12 @@ class MapRE extends Component {
         key: marker.key,
         address: marker.data.Address,
         amount: marker.data.Amount,
-        workingHour: marker.data.WorkingHour,
+        workingTime: marker.data.WorkingTime,
         latitude: marker.data.lat,
         longitude: marker.data.long,
         distance:geolib.getDistance({
-          latitude: marker.latitude,
-          longitude: marker.longitude
+          latitude: marker.data.lat,
+          longitude: marker.data.long
         }, {
           latitude: this.state.gps.latitude,
           longitude: this.state.gps.longitude
@@ -619,7 +634,7 @@ class MapRE extends Component {
       key: "",
       address: "",
       amount: "",
-      workingHour: "",
+      workingTime: "",
       latitude: 20,
       longitude: 20
     };
@@ -629,7 +644,7 @@ class MapRE extends Component {
         key: marker.key,
         address: marker.data.Address,
         amount: marker.data.Amount,
-        workingHour: marker.data.WorkingHour,
+        workingTime: marker.data.WorkingTime,
         latitude: marker.data.lat,
         longitude: marker.data.long
       };
@@ -652,7 +667,7 @@ class MapRE extends Component {
       key: "",
       address: "",
       amount: "",
-      workingHour: "",
+      workingTime: "",
       latitude: 20,
       longitude: 20
     };
@@ -662,7 +677,7 @@ class MapRE extends Component {
         key: marker.key,
         address: marker.data.Address,
         amount: marker.data.Amount,
-        workingHour: marker.data.WorkingHour,
+        workingTime: marker.data.WorkingTime,
         latitude: marker.data.lat,
         longitude: marker.data.long
       };
@@ -684,7 +699,7 @@ class MapRE extends Component {
           key: temp.key,
           address: temp.address,
           amount: temp.amount,
-          workingHour: temp.workingHour,
+          workingTime: temp.workingTime,
           latitude: temp.latitude,
           longitude: temp.longitude
         };
@@ -706,39 +721,44 @@ class MapRE extends Component {
     return data;
   }
 
-  getArrayMarker(dataState,distance=3000){
+  getArrayMarker(dataState,distance=1000){
     var data = {
       key: "",
       address: "",
       amount: "",
-      workingHour: "",
+      workingTime: "",
       latitude: 20,
       longitude: 20
     }, final =[];
     
-    for (marker of dataState.markers) {
-      data = {
+    arrMarker = this.addDistance(dataState.markers);
+
+    arrMarker.map(marker=>{
+      if(marker.distance<=distance)
+      final.push( {
         key: marker.key,
-        address: marker.data.Address,
-        amount: marker.data.Amount,
-        workingHour: marker.data.WorkingHour,
-        latitude: marker.data.lat,
-        longitude: marker.data.long
-      };
-      if(geolib.getDistance(
-        {
-          latitude: data.latitude,
-          longitude: data.longitude
-        },
-        {
-          latitude: dataState.gps.latitude,
-          longitude: dataState.gps.longitude
-        }
-      )<=distance)
-      {
-        final.push(data)
-      }
-    }
+        address: marker.address,
+        amount: marker.amount,
+        workingTime: marker.workingTime,
+        latitude: marker.latitude,
+        longitude: marker.longitude
+      })
+
+    })
+      //   if(geolib.getDistance(
+      //   {
+      //     latitude: marker.data.lat,
+      //     longitude: marker.data.long
+      //   },
+      //   {
+      //     latitude: dataState.gps.latitude,
+      //     longitude: dataState.gps.longitude
+      //   }
+      // )<=distance)
+      // {
+        
+      //}
+    //}
     return final
 
   }
@@ -794,9 +814,40 @@ class MapRE extends Component {
     console.log(annotations)
     dataState.arrayDistrict=annotations 
   }
+
+  async  getGeoArr_First(results) {
+    Geocoder.fallbackToGoogle("AIzaSyASXNMgcK0TPsu8RIA5ceulYo_bMJIH6iU");
+    var annotations = []
+    // var vincenty = getArrMarkerBound(this.state.gps.latitude, this.state.gps.longitude, 45, 5);
+    for (var l of arrayVincenty) {
+    var r = await getGeo(l)
+    if (r == null) continue; 
+    annotations.push(r)
+  
+    }
+    console.log("annotations")
+    console.log(annotations)
+
+    this.setState({
+      region: {
+         latitude: results[0].latitude,
+         longitude: results[0].longitude,
+         latitudeDelta: 0.02108755978843213,
+         longitudeDelta: 0.012548379600062276
+       },
+       gps: {
+         latitude:results[0].latitude,
+         longitude: results[0].longitude,
+       },
+       // Tính ra mảng 8  tọa đọ nằm gần 
+       arrayVincenty: getArrMarkerBound(results[0].latitude,results[0].longitude,45,3),
+        
+        arrayDistrict:annotations 
+      })
+  }
   
   render() {
-    console.log("RENDER :"+this.state.region)
+    console.log("RENDER :"+this.state.arrayDistrict)
     return (
       <View style={{ flex: 1 }}>
         <OfflineBar offlineText="Oops! We cant connect to Internet"/>
@@ -814,6 +865,15 @@ class MapRE extends Component {
                 showsBuildings={false}
                 ref={c => this.mapView = c}
                 >
+                < Circle center = {
+                {
+                  latitude: this.state.shouldRenderListMarker===true?this.state.gps.latitude:20,
+                  longitude:  this.state.shouldRenderListMarker===true?this.state.gps.longitude:20
+                }} 
+                radius = {this.state.distanceValue*1000}
+                strokeColor="rgba(231, 226, 255, 0.5)"
+                fillColor = "rgba(231, 226, 255, 0.5)" / > 
+              
                 {/* Render marker tại gps */}
                 <Marker 
                   coordinate={  {
@@ -825,7 +885,7 @@ class MapRE extends Component {
                
                 {/* Mode Show List Atm */}
                 {this.renderListMarker()}
-                {/* {this.renderDirection()} */}
+                {this.renderDirection()}
 
                 {/* Mode Render a Atm */}
                 {this.renderMarkerCloseToPos()}
@@ -841,27 +901,27 @@ class MapRE extends Component {
                  <ActionButton.Item buttonColor='#3498db' title="Find Around Me" onPress={() => this.showListATM()}>
                  <Image source={ic_findAround}/>
                  </ActionButton.Item>
-                 <ActionButton.Item buttonColor='#1abc9c' title="All Tasks" onPress={() => {}}>
-                 <Icon name="settings" style={styles.actionButtonIcon} />
+                 <ActionButton.Item buttonColor='#1abc9c' title="Info" onPress={() => this.showScaleAnimationDialog()}>
+                 <Image source={ic_info}/>
                  </ActionButton.Item>
                 </ActionButton>
             </View>
             {this.renderSlider()}
-            </View>
+            </View >
             <View style={styles.searchBox}>
-			    	<View style={styles.inputWrapper}>
+			    	<TouchableOpacity style={styles.inputWrapper}   onPress={()=>this.openSearchModal()}>
 					  <Text style={styles.label}>SEARCH LOCATION</Text>
             <Text> </Text>
           	<View style={{flex:1,alignItems:"center",justifyContent:"space-evenly",flexDirection:"row"}}>
 						<Icon name="search" size={15} color="#FF5E3A"/>
 						<Text
-            onPress={()=>this.openSearchModal()}
+           
             >{this.state.getSearchBoxResult===true?
               this.state.address:"Search"}</Text>
             <Text>  </Text>
 					  </View>
             <Text> </Text>
-            </View>
+            </TouchableOpacity>
           </View>
           
             {this.renderViewInfo()}
