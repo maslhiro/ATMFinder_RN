@@ -195,6 +195,11 @@ class MapRE extends Component {
   componentDidUpdate(prevProps, prevState) {
 
     prevState.shouldRenderListMarker = false;
+
+    if(prevState.getATM===true){
+      prevState.markers=[]
+    }
+
     prevState.getGPS = false;
     prevState.getATM = false;
     prevState.renderDirection = false;
@@ -329,6 +334,7 @@ class MapRE extends Component {
 
   renderDirection(){
     console.log("RENDER DIRECTION: "+this.state.renderDirection)
+    
     if(this.state.renderDirection===true)
     return(
       <View>
@@ -438,7 +444,7 @@ class MapRE extends Component {
       <View style={styles.dialogContentView}>
         <ImageBackground source={background} style={{width:"100%" ,height:"100%"}}> 
         <View style={{flex:1,alignItems:"center",justifyContent:"center"}}>
-           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Version 1.0.1 </Text> 
+           <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Version 1.0.4 </Text> 
            <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Help find an ATM near you </Text>
            <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>Contact 2amteam.uit@gmail.com  </Text> 
            <Text style={{fontFamily:"Roboto",fontSize:15,color:"#FFFFFF"}}>for more infomation.  </Text>
@@ -562,6 +568,7 @@ class MapRE extends Component {
           longitudeDelta: 0.012548379600062276,
         },
         arrayVincenty: getArrMarkerBound(place.latitude,place.longitude,45,3),
+        arrayDistrict:[],
         currentMarker: {
           key: "",
           address: "",
@@ -570,6 +577,7 @@ class MapRE extends Component {
           latitude:20,
           longitude: 20
         },
+        markers:[],
         renderDirection :false
       })
 		console.log(place);
@@ -833,6 +841,13 @@ class MapRE extends Component {
     annotations.push(r)
   
     }
+
+    // Kiem tra cac quan hyen trung 
+    
+    // console.log("annotations - 1")
+    // console.log(annotations)
+    // annotations = checkDitrictArr(annotations)
+
     console.log("annotations")
     console.log(annotations)
     dataState.arrayDistrict=annotations 
@@ -1223,6 +1238,38 @@ function checkDescription(key){
 
 export default MapRE;
 
+function checkDitrictArr(arr){
+  
+ 
+  arr.map(item=>{
+    console.log(countNumberDitrict(arr.slice(arr.indexOf(item)+1,arr.length-1),item))
+    if(countNumberDitrict(arr.slice(arr.indexOf(item),arr.length-1),item)){
+     
+      arr.splice(arr.indexOf(item),1);
+    }
+  })
+  return arr;
+}
+
+function countNumberDitrict(arr,item){
+  
+  arr.map(itemarr=>{
+    console.log("Item City:"+itemarr.city)
+    console.log("Item Dictrict: "+itemarr.district)
+
+    console.log(" City:"+item.city)
+    console.log(" Dictrict: "+item.district)
+    if(itemarr.city==item.city )
+    {
+      
+      if(itemarr.district==item.district ){
+          return true;
+      }
+    }
+    
+  })
+  return false;
+}
 
 const MapStyle = 
 [
