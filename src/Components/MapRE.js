@@ -109,24 +109,24 @@ class MapRE extends Component {
 
     RNGooglePlaces.getCurrentPlace()
     .then((results) => {
-          this.getGeoArr_First(results)
+     //     this.getGeoArr_First(results)
 
     // Test       
-    //        this.setState({
-    //        region: {
-    //           latitude: results[0].latitude,
-    //           longitude: results[0].longitude,
-    //           latitudeDelta: 0.02108755978843213,
-    //           longitudeDelta: 0.012548379600062276
-    //         },
-    //         gps: {
-    //           latitude:results[0].latitude,
-    //           longitude: results[0].longitude,
-    //         },
-    //         // Tính ra mảng 8  tọa đọ nằm gần 
-    //         arrayVincenty: getArrMarkerBound(results[0].latitude,results[0].longitude,45,3),
+           this.setState({
+           region: {
+              latitude: results[0].latitude,
+              longitude: results[0].longitude,
+              latitudeDelta: 0.02108755978843213,
+              longitudeDelta: 0.012548379600062276
+            },
+            gps: {
+              latitude:results[0].latitude,
+              longitude: results[0].longitude,
+            },
+            // Tính ra mảng 8  tọa đọ nằm gần 
+            arrayVincenty: getArrMarkerBound(results[0].latitude,results[0].longitude,45,3),
              
-    // })
+    })
     ,(error) => console.log(error.message),{timeout:20000}
   })
 }

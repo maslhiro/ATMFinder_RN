@@ -23,9 +23,19 @@ https://github.com/mastermoo/react-native-action-button
   - react-native-google-places:
 https://github.com/tolu360/react-native-google-places
 
-  
+## Prototype
 <img width="933" alt="ui" src="https://user-images.githubusercontent.com/26876671/38883831-360c3488-4298-11e8-8941-d89ae3510339.png">
 
 ## Demo 
+ChPlay :
+https://play.google.com/store/apps/details?id=com.twoamteam.atmfinder
+
 https://youtu.be/lbHtiUYnbB8
 
+<img width="344" alt="1" src="https://user-images.githubusercontent.com/26876671/41572143-9e17002e-73a0-11e8-94d0-b92456197157.png">
+<img width="344" alt="2" src="https://user-images.githubusercontent.com/26876671/41572144-9e52af84-73a0-11e8-96dd-98d07ffbbe31.png">
+<img width="344" alt="3" src="https://user-images.githubusercontent.com/26876671/41572145-9e934a44-73a0-11e8-95b7-6107781ee0a4.png">
+
+<img width="344" alt="4" src="https://user-images.githubusercontent.com/26876671/41572169-c141c048-73a0-11e8-804f-537a9a670c5f.png">
+
+![unitag_qrcode_1527815854586](https://user-images.githubusercontent.com/26876671/41572215-fac01536-73a0-11e8-920b-1918c8a6e15f.png)
