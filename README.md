@@ -22,6 +22,8 @@
 https://github.com/mastermoo/react-native-action-button
   - react-native-google-places:
 https://github.com/tolu360/react-native-google-places
+  - react-native-permissions :
+https://github.com/yonahforst/react-native-permissions 
 
 ## Prototype
 <img width="933" alt="ui" src="https://user-images.githubusercontent.com/26876671/38883831-360c3488-4298-11e8-8941-d89ae3510339.png">
